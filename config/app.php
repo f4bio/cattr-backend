@@ -21,6 +21,11 @@ return [
     'recaptcha' => [
         'enabled' => env('RECAPTCHA_ENABLED', false)
     ],
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'project_id' => env('GOOGLE_PROJECT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    ],
     'user_activity' => [
         'online_status_time' => 60,
         'heartbeat_period' => 30,
