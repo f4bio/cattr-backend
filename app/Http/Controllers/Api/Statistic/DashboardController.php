@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\Api\Statistic;
 
-use Filter;
-use App\Models\Project;
 use App\Models\TimeInterval;
+use App\Services\TimeIntervalService;
 use Carbon\Carbon;
+use Filter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Auth;
-use DB;
 use Validator;
 
 class DashboardController extends ReportController
@@ -219,103 +217,36 @@ class DashboardController extends ReportController
     /**
      * Handle the incoming request.
      * @param Request $request
+     * @param TimeIntervalService $timeIntervalService
      * @return JsonResponse
      */
-    public function timeIntervals(Request $request): JsonResponse
+    public function timeIntervals(Request $request, TimeIntervalService $timeIntervalService): JsonResponse
     {
         $request->validate($this->getValidationRules());
 
         $userIds = $request->input('user_ids');
         $projectIds = $request->input('project_ids');
-
         $timezone = $request->input('timezone') ?: 'UTC';
         $timezoneOffset = (new Carbon())->setTimezone($timezone)->format('P');
-
         $startAt = Carbon::parse($request->input('start_at'), $timezone)
             ->tz('UTC')
             ->toDateTimeString();
-
         $endAt = Carbon::parse($request->input('end_at'), $timezone)
             ->tz('UTC')
             ->toDateTimeString();
 
-        $intervals = TimeInterval::with('task', 'task.project')
-            ->select(
-                'user_id',
-                'id',
-                'task_id',
-                'is_manual',
-                DB::raw("CONVERT_TZ(start_at, '+00:00', '{$timezoneOffset}') as start_at"),
-                DB::raw("CONVERT_TZ(end_at, '+00:00', '{$timezoneOffset}') as end_at"),
-                DB::raw('TIMESTAMPDIFF(SECOND, start_at, end_at) as duration'),
-                DB::raw('UNIX_TIMESTAMP(start_at) as raw_start_at'),
-                DB::raw('UNIX_TIMESTAMP(end_at) as raw_end_at')
-            )
-            ->whereIn('user_id', $userIds)
-            ->where('start_at', '>=', $startAt)
-            ->where('start_at', '<', $endAt)
-            ->whereNull('deleted_at')
-            ->orderBy('user_id')
-            ->orderBy('task_id')
-            ->orderBy('start_at');
-
-        if (!empty($projectIds)) {
-            $intervals = $intervals->whereHas('task', function ($query) use ($projectIds) {
-                $query->whereIn('tasks.project_id', $projectIds);
-            });
-        }
-
-        $intervals = $intervals->get();
-
-        $users = [];
-        $previousInterval = false;
-        foreach ($intervals as $interval) {
-            $user_id = (int)$interval->user_id;
-            $duration = (int)$interval->duration;
-
-            if (!isset($users[$user_id])) {
-                $users[$user_id] = [
-                    'user_id' => $user_id,
-                    'intervals' => [],
-                    'duration' => 0,
-                ];
-            }
-
-            $intervalData = [
-                'id' => (int)$interval->id,
-                'ids' => [(int)$interval->id],
-                'user_id' => (int)$user_id,
-                'is_manual' => (int)$interval->is_manual,
-                'duration' => $duration,
-                'start_at' => Carbon::parse($interval->start_at)->toIso8601String(),
-                'end_at' => Carbon::parse($interval->end_at)->toIso8601String(),
-                'task' => $interval->task,
-            ];
-
-            // Merge with the previous interval if it is consecutive and has the same task
-            if ($previousInterval !== false
-                && (int)$interval->raw_start_at - (int)$previousInterval->raw_end_at <= 5
-                && $interval->is_manual === $previousInterval->is_manual
-                && $interval->user_id === $previousInterval->user_id
-                && $interval->task_id === $previousInterval->task_id) {
-                $previousIndex = count($users[$user_id]['intervals']) - 1;
-                $users[$user_id]['intervals'][$previousIndex]['ids'][] = $intervalData['id'];
-                $users[$user_id]['intervals'][$previousIndex]['duration'] += $intervalData['duration'];
-                $users[$user_id]['intervals'][$previousIndex]['end_at'] = $intervalData['end_at'];
-            } else {
-                $users[$user_id]['intervals'][] = $intervalData;
-            }
-
-            $users[$user_id]['duration'] += $duration;
-            $previousInterval = $interval;
-        }
-
-        $results = ['userIntervals' => $users];
+        $reports = $timeIntervalService->getReportForDashBoard(compact(
+            'startAt',
+            'endAt',
+            'timezoneOffset',
+            'projectIds',
+            'userIds'
+        ));
 
         return new JsonResponse(
             Filter::process(
                 $this->getEventUniqueName('answer.success.report.show'),
-                $results
+                ['userIntervals' => $reports,]
             )
         );
     }
