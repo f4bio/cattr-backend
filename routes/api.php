@@ -2,10 +2,13 @@
 
 use App\Http\Controllers\Api\AboutController;
 use App\Http\Controllers\Api\CompanySettingsController;
+use App\Http\Controllers\Api\Google\OAuthController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\PriorityController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ProjectMemberController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\ScreenshotController;
 use App\Http\Controllers\Api\Statistic\DashboardController;
 use App\Http\Controllers\Api\Statistic\ProjectReportController;
 use App\Http\Controllers\Api\Statistic\TimeUseReportController;
@@ -13,14 +16,12 @@ use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TimeController;
 use App\Http\Controllers\Api\TimeIntervalController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\InstallationController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\RegistrationController;
-use App\Http\Controllers\Api\ScreenshotController;
 use App\Http\Controllers\ScreenshotController as ScreenshotStaticController;
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\StatusController;
 use App\Http\Middleware\EnsureIsInstalled;
 use Illuminate\Routing\Router;
@@ -32,6 +33,8 @@ Route::group([
     $router->get('screenshots/{screenshot}', [ScreenshotStaticController::class, 'screenshot']);
     $router->get('screenshots/thumbs/{screenshot}', [ScreenshotStaticController::class, 'thumbnail']);
 });
+
+Route::post('google/oauth/init', [OAuthController::class, 'authInit']);
 
 // Routes for login/register processing
 Route::group([
