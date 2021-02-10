@@ -12,20 +12,27 @@ class ActionDeterminator
 
     /**
      * @param string $actionId
+     * @param array $params
      * @return DTO\Action
-     * @throws ActionDeterminationException
      */
-    public function determinate(string $actionId): DTO\Action
+    public function determinate(string $actionId, array $params = []): DTO\Action
     {
         if ($actionId === self::ACTION_EXPORT_REPORT_TO_GOOGLE_SHEETS) {
-            return new DTO\Action('https://example.com/google/oauth/end', [
-                Google_Service_Sheets::SPREADSHEETS,
-                Google_Service_Oauth2::USERINFO_PROFILE,
-                Google_Service_Oauth2::USERINFO_EMAIL,
-                Google_Service_Oauth2::OPENID,
-            ]);
+            return $this->buildActionForExportInSheets($params);
         }
 
         throw new ActionDeterminationException();
+    }
+
+    private function buildActionForExportInSheets(array $params): DTO\Action
+    {
+        $uri = sprintf("https://%s/time-intervals/dashboard/export-in-sheets", config('app.domain'));
+
+        return new DTO\Action($uri, [
+            Google_Service_Sheets::SPREADSHEETS,
+            Google_Service_Oauth2::USERINFO_PROFILE,
+            Google_Service_Oauth2::USERINFO_EMAIL,
+            Google_Service_Oauth2::OPENID,
+        ], empty($params) ? null : base64_encode(json_encode($params)));
     }
 }

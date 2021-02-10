@@ -21,18 +21,23 @@ class OAuthController extends Controller
         ActionDeterminator $actionDeterminator
     ): JsonResponse {
         try {
-            $action = $actionDeterminator->determinate((string)$request->get('action_id'));
+            $action = $actionDeterminator->determinate((string)$request->get('action_id'), $request->query->all());
         } catch (ActionDeterminationException $actionDeterminationException) {
             Log::error($actionDeterminationException->getMessage());
 
             return new JsonResponse([
                 'message' => $actionDeterminationException->getMessage(),
                 'errors' => []
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            ], Response::HTTP_NOT_FOUND);
         }
 
         try {
             $googleClient->setRedirectUri($action->getRedirectUrl());
+
+            if ($state = $action->getState()) {
+                $googleClient->setState($state);
+            }
+
             $response = $googleClient->createAuthUrl($action->getScopes());
 
             return new JsonResponse(['url' => $response]);

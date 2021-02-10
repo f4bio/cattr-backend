@@ -9,6 +9,7 @@ return [
     'debug' => env('APP_DEBUG', false),
     'json_errors' => env('JSON_ERRORS', true),
     'url' => env('APP_URL', 'http://localhost'),
+    'domain' => env('APP_DOMAIN', 'time.amazingcat.net'),
     'frontend_url' => env('FRONTEND_APP_URL'),
     'timezone' => 'UTC',
     'languages' => ['en', 'ru'],

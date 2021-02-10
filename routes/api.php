@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ProjectMemberController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\ScreenshotController;
 use App\Http\Controllers\Api\Statistic\DashboardController;
+use App\Http\Controllers\Api\Statistic\ExportController;
 use App\Http\Controllers\Api\Statistic\ProjectReportController;
 use App\Http\Controllers\Api\Statistic\TimeUseReportController;
 use App\Http\Controllers\Api\TaskController;
@@ -34,7 +35,8 @@ Route::group([
     $router->get('screenshots/thumbs/{screenshot}', [ScreenshotStaticController::class, 'thumbnail']);
 });
 
-Route::post('google/oauth/init', [OAuthController::class, 'authInit']);
+Route::get('google/oauth/init', [OAuthController::class, 'authInit']);
+Route::get('time-intervals/dashboard/export-in-sheets', [ExportController::class, 'exportInGoogleSheets']);
 
 // Routes for login/register processing
 Route::group([

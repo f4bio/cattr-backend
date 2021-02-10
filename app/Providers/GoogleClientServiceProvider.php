@@ -21,7 +21,7 @@ class GoogleClientServiceProvider extends ServiceProvider
                     "auth_provider_x509_cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
                     "client_secret" => config('app.google.client_secret'),
                     "redirect_uris" => [
-                        "https://example.com/google/oauth/end"
+                        sprintf("https://%s/time-intervals/dashboard/export-in-sheets", config('app.domain'))
                     ]
                 ]
             ];
