@@ -6,7 +6,9 @@ namespace App\Services\External\Google;
 use App\Exceptions\ExternalServices\Google\Sheets\ExportException;
 use App\Helpers\ExternalServices\Google\Sheets\Reports\TimeIntervals\DashboardReportBuilder;
 use App\Services\TimeIntervalService;
+use Carbon\Carbon;
 use Google_Client;
+use Illuminate\Support\Facades\Validator;
 use JsonException;
 
 class SheetsService
@@ -48,8 +50,49 @@ class SheetsService
         }
 
         $this->googleClient->setAccessToken($accessToken);
-        $intervals = $this->timeIntervalService->getReportForDashBoard($params);
+        $intervals = $this->timeIntervalService->getReportForDashBoard($this->prepareParamsForDashboardQuery($params));
 
         return (new DashboardReportBuilder($this->googleClient))->build($intervals);
+    }
+
+    /**
+     * @param array $params
+     * @return array
+     * @throws ExportException
+     */
+    private function prepareParamsForDashboardQuery(array $params): array
+    {
+        $validator = Validator::make($params, [
+            'user_ids' => 'exists:users,id|array',
+            'project_ids' => 'nullable|exists:projects,id|array',
+            'start_at' => 'date|required',
+            'end_at' => 'date|required',
+        ]);
+
+        if ($validator->fails()) {
+            throw ExportException::fromMessageAndInvalidParams(
+                'Input parameters are invalid',
+                $validator->messages()->all()
+            );
+        }
+
+        $userIds = $params['user_ids'] ?? [];
+        $projectIds = $params['projectIds'] ?? [];
+        $timezone = $params['timezone'] ?: 'UTC';
+        $timezoneOffset = (new Carbon())->setTimezone($timezone)->format('P');
+        $startAt = Carbon::parse($params['start_at'], $timezone)
+            ->tz('UTC')
+            ->toDateTimeString();
+        $endAt = Carbon::parse($params['end_at'], $timezone)
+            ->tz('UTC')
+            ->toDateTimeString();
+
+        return compact(
+            'startAt',
+            'endAt',
+            'timezoneOffset',
+            'projectIds',
+            'userIds'
+        );
     }
 }

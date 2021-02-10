@@ -17,7 +17,7 @@ class TimeIntervalReportForDashboard
     {
         $timezoneOffset = $params['timezoneOffset'];
         $userIds = $params['userIds'];
-        $projectIds = $params['projectIds'];
+        $projectIds = $params['projectIds'] ?? [];
         $startAt = $params['startAt'];
         $endAt = $params['endAt'];
 
