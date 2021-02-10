@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use Google_Client;
 use Google_Service_Sheets;
 use Google_Service_Sheets_Spreadsheet;
+use Google_Service_Sheets_ValueRange;
 
 class DashboardReportBuilder
 {
@@ -33,7 +34,16 @@ class DashboardReportBuilder
 
         $spreadsheet = $googleSheetService->spreadsheets->create($spreadsheet, ['fields' => 'spreadsheetId']);
 
-        //TODO: build report from $intervals
+        // TODO: build report from $intervals
+        // Add table head
+        $tableHead = new Google_Service_Sheets_ValueRange();
+        $tableHead->setValues(["values" => ["Project", "User", "Task", "Time", "Hours (decimal)"]]);
+        $googleSheetService->spreadsheets_values->update(
+            $spreadsheet->getSpreadsheetId(),
+            'A1:E1',
+            $tableHead,
+            ["valueInputOption" => "RAW"]
+        );
 
         return $this->buildUrlToSheetById($spreadsheet->getSpreadsheetId());
     }
