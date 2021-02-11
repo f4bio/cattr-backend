@@ -37,13 +37,11 @@ class DashboardReportBuilder
         $spreadsheet = $googleSheetService->spreadsheets->create($spreadsheet, ['fields' => 'spreadsheetId']);
 
         // TODO: build report from $intervals
-        // Add table head
-        $tableHead = new Google_Service_Sheets_ValueRange();
-        $tableHead->setValues(["values" => ["Project", "User", "Task", "Time", "Hours (decimal)"],]);
+        $tableRangeValues = $this->buildTable($intervals);
         $googleSheetService->spreadsheets_values->update(
             $spreadsheet->getSpreadsheetId(),
-            'A1:E1',
-            $tableHead,
+            'A1:E5',
+            $tableRangeValues,
             ["valueInputOption" => "RAW"]
         );
 
@@ -89,5 +87,27 @@ class DashboardReportBuilder
     private function buildUrlToSheetById(string $sheetId): string
     {
         return sprintf("https://docs.google.com/spreadsheets/d/%s", $sheetId);
+    }
+
+    private function buildTable(array $intervals): Google_Service_Sheets_ValueRange
+    {
+        $tableValues[] = ["Project", "User", "Task", "Time", "Hours (decimal)"];
+
+        foreach ($this->buildTableBody($intervals) as $row) {
+            $tableValues[] = $row;
+        }
+
+        return new Google_Service_Sheets_ValueRange([
+            "values" => $tableValues,
+        ]);
+    }
+
+    private function buildTableBody(array $intervals): iterable
+    {
+        foreach ($intervals as $key => $interval) {
+            yield [1, 2, 3, 4, 5];
+        }
+
+        return [];
     }
 }
