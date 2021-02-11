@@ -13,7 +13,7 @@
       "erusev/parsedown": "^1.7",
       "fruitcake/laravel-cors": "^1.0",
       "fzaninotto/faker": "^1.9",
-      "google/apiclient": "^2.9",
+      "google/apiclient": "^2.7",
       "intervention/image": "^2.5",
       "joshbrw/laravel-module-installer": "^0.1.4",
       "k-adam/env-editor": "^1.0",
@@ -24,10 +24,10 @@
       "nwidart/laravel-modules": "^8",
       "php-http/guzzle6-adapter": "^2.0",
       "predis/predis": "^1.1",
-        "sentry/sentry-laravel": "^2.1",
-        "tymon/jwt-auth": "^1.0",
-        "webpatser/laravel-uuid": "^3.0",
-        "wikimedia/composer-merge-plugin": "dev-feature/composer-v2 as 1.5.0"
+      "sentry/sentry-laravel": "^2.1",
+      "tymon/jwt-auth": "^1.0",
+      "webpatser/laravel-uuid": "^3.0",
+      "wikimedia/composer-merge-plugin": "dev-feature/composer-v2 as 1.5.0"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.6.7",
