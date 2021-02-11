@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Google_Client;
 use Illuminate\Support\Facades\Validator;
 use JsonException;
+use Throwable;
 
 class SheetsService
 {
@@ -56,7 +57,11 @@ class SheetsService
         $intervals = $this->timeIntervalService->getReportForDashBoard($params);
         $title = sprintf("Project Report from %s to %s", $startAt, $endAt);
 
-        return (new DashboardReportBuilder($this->googleClient))->build($intervals, $title);
+        try {
+            return (new DashboardReportBuilder($this->googleClient))->build($intervals, $title);
+        } catch (Throwable $throwable) {
+            throw new ExportException($throwable->getMessage(), $throwable);
+        }
     }
 
     /**
