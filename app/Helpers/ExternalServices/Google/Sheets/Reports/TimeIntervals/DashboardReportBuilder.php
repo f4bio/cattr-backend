@@ -40,7 +40,7 @@ class DashboardReportBuilder
         $tableRangeValues = $this->buildTable($intervals);
         $googleSheetService->spreadsheets_values->update(
             $spreadsheet->getSpreadsheetId(),
-            'A1:E5',
+            'A1:E',
             $tableRangeValues,
             ["valueInputOption" => "RAW"]
         );
