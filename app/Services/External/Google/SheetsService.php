@@ -50,9 +50,13 @@ class SheetsService
         }
 
         $this->googleClient->setAccessToken($accessToken);
-        $intervals = $this->timeIntervalService->getReportForDashBoard($this->prepareParamsForDashboardQuery($params));
+        $startAt = $params['start_at'];
+        $endAt = $params['end_at'];
+        $params = $this->prepareParamsForDashboardQuery($params);
+        $intervals = $this->timeIntervalService->getReportForDashBoard($params);
+        $title = sprintf("Project Report from %s to %s", $startAt, $endAt);
 
-        return (new DashboardReportBuilder($this->googleClient))->build($intervals);
+        return (new DashboardReportBuilder($this->googleClient))->build($intervals, $title);
     }
 
     /**

@@ -3,9 +3,10 @@
 
 namespace App\Helpers\ExternalServices\Google\Sheets\Reports\TimeIntervals;
 
-use DateTimeImmutable;
 use Google_Client;
 use Google_Service_Sheets;
+use Google_Service_Sheets_BatchUpdateSpreadsheetRequest;
+use Google_Service_Sheets_Request;
 use Google_Service_Sheets_Spreadsheet;
 use Google_Service_Sheets_ValueRange;
 
@@ -20,15 +21,16 @@ class DashboardReportBuilder
 
     /**
      * @param array $intervals
+     * @param string $title
      * @return string - created sheet's URL
      * @see \App\Helpers\TimeIntervalReports\Reports\DashboardReportBuilder::build() - for build $intervals
      */
-    public function build(array $intervals): string
+    public function build(array $intervals, string $title): string
     {
         $googleSheetService = new Google_Service_Sheets($this->googleClient);
         $spreadsheet = new Google_Service_Sheets_Spreadsheet([
             'properties' => [
-                'title' => sprintf("Cattr Report from %s", (new DateTimeImmutable())->format('Y-m-d H:i:s'))
+                'title' => $title
             ]
         ]);
 
@@ -37,13 +39,49 @@ class DashboardReportBuilder
         // TODO: build report from $intervals
         // Add table head
         $tableHead = new Google_Service_Sheets_ValueRange();
-        $tableHead->setValues(["values" => ["Project", "User", "Task", "Time", "Hours (decimal)"]]);
+        $tableHead->setValues(["values" => ["Project", "User", "Task", "Time", "Hours (decimal)"],]);
         $googleSheetService->spreadsheets_values->update(
             $spreadsheet->getSpreadsheetId(),
             'A1:E1',
             $tableHead,
             ["valueInputOption" => "RAW"]
         );
+
+        $requests = [
+            new Google_Service_Sheets_Request([
+                'repeatCell' => [
+                    "range" => [
+                        "startRowIndex" => 0,
+                        "endRowIndex" => 1,
+                        "startColumnIndex" => 0,
+                        "endColumnIndex" => 5
+                    ],
+                    // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets#CellFormat
+                    "cell" => [
+                        "userEnteredFormat" => [
+                            // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets#Color
+                            "backgroundColor" => [
+                                "red" => 0.9,
+                                "green" => 0.99,
+                                "blue" => 0.86,
+                            ],
+                            // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets#HorizontalAlign
+                            "horizontalAlignment" => "CENTER",
+                            // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets#textformat
+                            "textFormat" => [
+                                "bold" => true,
+                            ]
+                        ]
+                    ],
+                    "fields" => "UserEnteredFormat(backgroundColor,horizontalAlignment,padding,textFormat)"
+                ]
+            ]),
+        ];
+        $batchUpdateRequest = new Google_Service_Sheets_BatchUpdateSpreadsheetRequest([
+            'requests' => $requests
+        ]);
+
+        $googleSheetService->spreadsheets->batchUpdate($spreadsheet->getSpreadsheetId(), $batchUpdateRequest);
 
         return $this->buildUrlToSheetById($spreadsheet->getSpreadsheetId());
     }
