@@ -3,6 +3,9 @@
 
 namespace App\Helpers\ExternalServices\Google\Sheets\Reports\TimeIntervals;
 
+use App\Helpers\Time\Time;
+use App\Models\Task;
+use App\Models\User;
 use Google_Client;
 use Google_Service_Sheets;
 use Google_Service_Sheets_BatchUpdateSpreadsheetRequest;
@@ -36,7 +39,6 @@ class DashboardReportBuilder
 
         $spreadsheet = $googleSheetService->spreadsheets->create($spreadsheet, ['fields' => 'spreadsheetId']);
 
-        // TODO: build report from $intervals
         $tableRangeValues = $this->buildTable($intervals);
         $googleSheetService->spreadsheets_values->update(
             $spreadsheet->getSpreadsheetId(),
@@ -93,7 +95,7 @@ class DashboardReportBuilder
     {
         $tableValues[] = ["Project", "User", "Task", "Time", "Hours (decimal)"];
 
-        foreach ($this->buildTableBody($intervals) as $row) {
+        foreach ($this->transformIntervalsToTableBody($intervals) as $row) {
             $tableValues[] = $row;
         }
 
@@ -102,10 +104,100 @@ class DashboardReportBuilder
         ]);
     }
 
-    private function buildTableBody(array $intervals): iterable
+    private function transformIntervalsToTableBody(array $intervals): iterable
     {
-        foreach ($intervals as $key => $interval) {
-            yield [1, 2, 3, 4, 5];
+        return $this->transformProjectsToMatrix($this->transformIntervalsToProjects($intervals));
+    }
+
+    private function transformIntervalsToProjects(array $intervals): array
+    {
+        $projects = [];
+        $userIds = [];
+
+        foreach ($intervals as $userIntervals) {
+            foreach ($userIntervals['intervals'] as $interval) {
+                /* @var Task $task */
+                $task = $interval['task'];
+                $duration = $interval['duration'];
+                $project = $task->project;
+                $projects[$project->id]['name'] = $project->name;
+                $projects[$project->id]['users'][$interval['user_id']]['tasks'][$task->id]['name'] = $task->task_name;
+                $projects[$project->id]['users'][$interval['user_id']]['tasks'][$task->id]['duration'] = $duration;
+                $userIds[] = $interval['user_id'];
+            }
+        }
+
+        return $this->transformUserIdToNameForProjects($projects, array_unique($userIds));
+    }
+
+    private function transformUserIdToNameForProjects(array $projects, array $userIds): array
+    {
+        $users = User::whereIn('id', $userIds)->get();
+
+        foreach ($users as $user) {
+            foreach ($projects as $projectId => $project) {
+                $projects[$projectId]['users'][$user->id]['name'] = $user->full_name;
+            }
+        }
+
+        return $projects;
+    }
+
+    private function transformProjectsToMatrix(array $projects): iterable
+    {
+        $totalDuration = new Time(0);
+
+        foreach ($projects as $projectId => $project) {
+            $projectName = $project['name'];
+            $projectDuration = new Time(0);
+            $needSkipProject = false;
+
+            foreach ($project['users'] as $userId => $user) {
+                $userName = $user['name'];
+                $needSkipUser = false;
+
+                foreach ($user['tasks'] as $task) {
+                    $taskName = $task['name'];
+                    $taskDuration = new Time($task['duration']);
+                    $projectDuration = $projectDuration->addTime($taskDuration);
+
+                    yield [
+                        $needSkipProject ? '' : $projectName,
+                        $needSkipUser ? '' : $userName,
+                        $taskName,
+                        $taskDuration->toString(),
+                        $taskDuration->toDecimalFormat(),
+                    ];
+
+                    $needSkipUser = true;
+                }
+
+                $needSkipProject = true;
+            }
+
+            yield ['', '', '', '', '',];
+
+            yield [
+                '',
+                '',
+                sprintf("Subtotal for %s", $projectName),
+                $projectDuration->toString(),
+                $projectDuration->toDecimalFormat(),
+            ];
+
+            $totalDuration = $totalDuration->addTime($projectDuration);
+
+            yield ['', '', '', '', '',];
+        }
+
+        if (!empty($projects)) {
+            yield [
+                '',
+                '',
+                'Total',
+                $totalDuration->toString(),
+                $totalDuration->toDecimalFormat(),
+            ];
         }
 
         return [];
