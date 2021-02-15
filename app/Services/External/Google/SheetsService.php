@@ -9,7 +9,6 @@ use App\Services\TimeIntervalService;
 use Carbon\Carbon;
 use Google_Client;
 use Illuminate\Support\Facades\Validator;
-use JsonException;
 use Throwable;
 
 class SheetsService
@@ -33,31 +32,12 @@ class SheetsService
     {
         try {
             $token = $this->googleClient->fetchAccessTokenWithAuthCode($code);
-            $accessToken = $token['access_token'] ?? null;
-
-            if (!$accessToken) {
-                throw ExportException::fromMessageAndInvalidParams(
-                    'Failed fetching of the access token',
-                    ['code' => 'Parameter is invalid']
-                );
-            }
-
+            $this->googleClient->setAccessToken($token);
             $params = json_decode(base64_decode($state), true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $jsonException) {
-            throw ExportException::fromMessageAndInvalidParams(
-                'Failed parse state parameter',
-                ['state' => 'Parameter STATE must be base64(json()) encoded']
-            );
-        }
+            $params = $this->prepareParamsForDashboardQuery($params);
+            $intervals = $this->timeIntervalService->getReportForDashBoard($params);
+            $title = sprintf("Project Report from %s to %s", $params['startAt'], $params['endAt']);
 
-        $this->googleClient->setAccessToken($accessToken);
-        $startAt = $params['start_at'];
-        $endAt = $params['end_at'];
-        $params = $this->prepareParamsForDashboardQuery($params);
-        $intervals = $this->timeIntervalService->getReportForDashBoard($params);
-        $title = sprintf("Project Report from %s to %s", $startAt, $endAt);
-
-        try {
             return (new DashboardReportBuilder($this->googleClient))->build($intervals, $title);
         } catch (Throwable $throwable) {
             throw new ExportException($throwable->getMessage(), $throwable);
