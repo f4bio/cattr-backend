@@ -27,6 +27,7 @@ class GoogleClientServiceProvider extends ServiceProvider
             ];
             $client->setAuthConfig($config);
             $client->setAccessType('offline');
+            $client->setPrompt('consent');
 
             return $client;
         });
