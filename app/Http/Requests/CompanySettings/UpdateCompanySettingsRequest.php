@@ -28,9 +28,7 @@ class UpdateCompanySettingsRequest extends FormRequest
             'work_time' => 'sometimes|int',
             'auto_thinning' => 'sometimes|boolean',
             'language' => 'sometimes|string',
-            'google_client_id' => 'sometimes|string|nullable',
-            'google_project_id' => 'sometimes|string|nullable',
-            'google_client_secret' => 'sometimes|string|nullable',
+            'default_priority_id' => 'sometimes|int',
         ];
     }
 }

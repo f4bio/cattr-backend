@@ -24,9 +24,6 @@ class CompanySettings extends JsonResource
             'heartbeat_period' => config('app.user_activity.online_status_time'),
             'auto_thinning' => (bool)($this['auto_thinning'] ?? false),
             'default_priority_id' => (int)($this['default_priority_id'] ?? 2),
-            'google_client_id' => $this['google_client_id'] ?? null,
-            'google_project_id' => $this['google_project_id'] ?? null,
-            'google_client_secret' => $this['google_client_secret'] ?? null,
         ];
     }
 }
