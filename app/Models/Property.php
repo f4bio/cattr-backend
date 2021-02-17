@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use RuntimeException;
+use Throwable;
 
 /**
  * App\Models\Property
@@ -37,9 +39,6 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * @method static QueryBuilder|Property withoutTrashed()
  * @method static QueryBuilder|Property onlyTrashed()
  * @mixin EloquentIdeHelper
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Property newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Property newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Property query()
  */
 class Property extends Model
 {
@@ -112,5 +111,25 @@ class Property extends Model
         }
 
         return self::where($queryData)->get();
+    }
+
+    /**
+     * @return string
+     * @throws RuntimeException
+     */
+    public static function getInstanceId(): string
+    {
+        try {
+            $property = self::query()->where('name', '=', 'INSTANCE_ID')->first();
+            $value = $property === null ? null : $property->value;
+
+            if (!is_string($value)) {
+                throw new RuntimeException('Failed getting instance id');
+            }
+
+            return $value;
+        } catch (Throwable $throwable) {
+            throw new RuntimeException($throwable->getMessage(), 0, $throwable);
+        }
     }
 }
