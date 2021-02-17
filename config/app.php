@@ -9,7 +9,6 @@ return [
     'debug' => env('APP_DEBUG', false),
     'json_errors' => env('JSON_ERRORS', true),
     'url' => env('APP_URL', 'http://localhost'),
-    'domain' => env('APP_DOMAIN', 'time.amazingcat.net'),
     'frontend_url' => env('FRONTEND_APP_URL'),
     'timezone' => 'UTC',
     'languages' => ['en', 'ru'],
@@ -22,10 +21,8 @@ return [
     'recaptcha' => [
         'enabled' => env('RECAPTCHA_ENABLED', false)
     ],
-    'google' => [
-        'client_id' => env('GOOGLE_CLIENT_ID'),
-        'project_id' => env('GOOGLE_PROJECT_ID'),
-        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    'google_integration_bus' => [
+        'url' => env('GOOGLE_INTEGRATION_BUS_URL'),
     ],
     'user_activity' => [
         'online_status_time' => 60,
@@ -70,7 +67,6 @@ return [
         Sentry\Laravel\ServiceProvider::class,
 
         App\Providers\SettingsServiceProvider::class,
-        App\Providers\GoogleClientServiceProvider::class,
     ],
     'aliases' => [
 

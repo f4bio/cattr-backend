@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Api\AboutController;
 use App\Http\Controllers\Api\CompanySettingsController;
-use App\Http\Controllers\Api\Google\OAuthController;
+use App\Http\Controllers\Api\Google\ActionController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\PriorityController;
 use App\Http\Controllers\Api\ProjectController;
@@ -35,7 +35,7 @@ Route::group([
     $router->get('screenshots/thumbs/{screenshot}', [ScreenshotStaticController::class, 'thumbnail']);
 });
 
-Route::get('google/oauth/init', [OAuthController::class, 'authInit']);
+Route::get('actions/{actionId}/url', [ActionController::class, 'getUrlByActionId']);
 Route::get('time-intervals/dashboard/export-in-sheets', [ExportController::class, 'exportInGoogleSheets']);
 
 // Routes for login/register processing

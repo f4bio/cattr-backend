@@ -8,7 +8,7 @@ use Google_Service_Sheets;
 
 class ActionDeterminator
 {
-    public const ACTION_EXPORT_REPORT_TO_GOOGLE_SHEETS = 'EXPORT_REPORT_TO_GOOGLE_SHEETS';
+    public const ACTION_EXPORT_REPORT_TO_GOOGLE_SHEETS = 'export_report_to_google_sheets';
 
     /**
      * @param string $actionId
