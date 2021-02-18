@@ -41,4 +41,13 @@ class ImproveException extends Exception
     {
         return new static($message, null, $invalidParams);
     }
+
+    public function normalizeToHttpResponseBody(): array
+    {
+        return [
+            'additional_params' => $this->additionalParams,
+            'invalid_params' => $this->invalidParams,
+            'message' => $this->message,
+        ];
+    }
 }

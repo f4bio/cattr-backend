@@ -21,6 +21,7 @@ return [
     'recaptcha' => [
         'enabled' => env('RECAPTCHA_ENABLED', false)
     ],
+    'domain' => env('APP_DOMAIN'),
     'google_integration_bus' => [
         'url' => env('GOOGLE_INTEGRATION_BUS_URL'),
     ],

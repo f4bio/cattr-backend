@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Api\AboutController;
 use App\Http\Controllers\Api\CompanySettingsController;
-use App\Http\Controllers\Api\Google\ActionController;
+use App\Http\Controllers\Api\Google\ExportController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\PriorityController;
 use App\Http\Controllers\Api\ProjectController;
@@ -10,7 +10,6 @@ use App\Http\Controllers\Api\ProjectMemberController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\ScreenshotController;
 use App\Http\Controllers\Api\Statistic\DashboardController;
-use App\Http\Controllers\Api\Statistic\ExportController;
 use App\Http\Controllers\Api\Statistic\ProjectReportController;
 use App\Http\Controllers\Api\Statistic\TimeUseReportController;
 use App\Http\Controllers\Api\TaskController;
@@ -35,8 +34,7 @@ Route::group([
     $router->get('screenshots/thumbs/{screenshot}', [ScreenshotStaticController::class, 'thumbnail']);
 });
 
-Route::get('actions/{actionId}/url', [ActionController::class, 'getUrlByActionId']);
-Route::get('time-intervals/dashboard/export-in-sheets', [ExportController::class, 'exportInGoogleSheets']);
+Route::post('time-intervals/dashboard/export-in-sheets', [ExportController::class, 'exportReportInit']);
 
 // Routes for login/register processing
 Route::group([

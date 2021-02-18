@@ -3,8 +3,14 @@
 
 namespace App\Services\External\Google;
 
+use App\Exceptions\ExternalServices\Google\AuthException;
 use App\Models\Property;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\RequestOptions;
+use JsonException;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,46 +36,76 @@ class IntegrationService
     }
 
     /**
-     * @param string $actionId
+     * @param int $userId
      * @param array $state
-     * @return string
+     * @return void
+     * @throws AuthException
      * @throws RuntimeException
      */
-    public function getUrlByActionId(string $actionId, array $state = []): string
+    public function auth(int $userId, array $state = []): void
     {
         $state['instanceId'] = $this->instanceId;
+        $state['domain'] = config('app.domain');
+        $state['userId'] = $userId;
+        $this->logger->debug('The system is going to send a request to check auth to export a report in Google Sheet.');
 
         try {
-            $response = $this->httpClient->request(
-                'GET',
-                sprintf(
-                    "%s/api/v1/actions/%s/url?%s",
-                    config('app.google_integration_bus.url'),
-                    $actionId,
-                    http_build_query([
-                        'instanceId' => $this->instanceId,
-                        'state' => base64_encode(json_encode($state, JSON_THROW_ON_ERROR)),
-                    ])
-                )
-            );
+            $response = $this->sendRequestAuth($state, $userId);
 
-            $content = $response->getBody()->getContents();
+            $this->logger->debug(sprintf(
+                "The system received response just now. Body: %s, Status: %s",
+                $response->getBody(),
+                $response->getStatusCode()
+            ));
 
-            if ($response->getStatusCode() === Response::HTTP_OK) {
-                $decodedResponse = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+            $this->logger->debug('Auth');
 
-                return $decodedResponse['url'];
+            if ($response->getStatusCode() === Response::HTTP_NO_CONTENT) {
+                return;
             }
 
             throw new RuntimeException(sprintf(
-                "Operation getting auth url by action id was failed. HTTP Status code: %s, content: %s",
+                "Google Proxy service sent response with unknown status. Status: %s, Content: %s",
                 $response->getStatusCode(),
-                $content
+                $response->getBody()->getContents()
             ));
+        } catch (ClientException $clientException) {
+            $response = $clientException->getResponse();
+
+            if ($response->getStatusCode() === Response::HTTP_UNAUTHORIZED) {
+                $decodedResponse = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+
+                throw new AuthException($decodedResponse['url']);
+            }
         } catch (Throwable $throwable) {
             $this->logger->alert(sprintf("%s%s%s", $throwable->getMessage(), PHP_EOL, $throwable->getTraceAsString()));
 
-            throw new RuntimeException('Operation getting auth url by action id was failed', 0, $throwable);
+            throw new RuntimeException('Operation check access to export was failed', 0, $throwable);
         }
+    }
+
+    /**
+     * @param array $state
+     * @param int $userId
+     * @return ResponseInterface
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    private function sendRequestAuth(array $state, int $userId): ResponseInterface
+    {
+        return $this->httpClient->request(
+            'POST',
+            sprintf(
+                "%s/api/v1/google/auth",
+                config('app.google_integration_bus.url'),
+            ),
+            [
+                RequestOptions::JSON => [
+                    'state' => base64_encode(json_encode($state, JSON_THROW_ON_ERROR)),
+                    'userId' => $userId,
+                    'instanceId' => $this->instanceId,
+                ]
+            ]
+        );
     }
 }
