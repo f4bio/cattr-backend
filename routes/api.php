@@ -34,7 +34,8 @@ Route::group([
     $router->get('screenshots/thumbs/{screenshot}', [ScreenshotStaticController::class, 'thumbnail']);
 });
 
-Route::post('time-intervals/dashboard/export-in-sheets', [ExportController::class, 'exportReportInit']);
+Route::get('time-intervals/dashboard/export-in-sheets', [ExportController::class, 'exportReportInit']);
+Route::get('time-intervals/dashboard/export-in-sheets/end', [ExportController::class, 'exportReportEnd']);
 
 // Routes for login/register processing
 Route::group([

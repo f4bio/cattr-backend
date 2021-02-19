@@ -4,7 +4,6 @@
 namespace App\Services\External\Google;
 
 use App\Exceptions\ExternalServices\Google\AuthException;
-use App\Models\Property;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -32,7 +31,6 @@ class IntegrationService
     {
         $this->httpClient = $httpClient;
         $this->logger = $logger;
-        $this->instanceId = Property::getInstanceId();
     }
 
     /**
@@ -44,9 +42,6 @@ class IntegrationService
      */
     public function auth(int $userId, array $state = []): void
     {
-        $state['instanceId'] = $this->instanceId;
-        $state['domain'] = config('app.domain');
-        $state['userId'] = $userId;
         $this->logger->debug('The system is going to send a request to check auth to export a report in Google Sheet.');
 
         try {
@@ -58,9 +53,8 @@ class IntegrationService
                 $response->getStatusCode()
             ));
 
-            $this->logger->debug('Auth');
-
             if ($response->getStatusCode() === Response::HTTP_NO_CONTENT) {
+                $this->logger->debug(sprintf("User %d has access to export in Google Sheet", $userId));
                 return;
             }
 
@@ -71,9 +65,20 @@ class IntegrationService
             ));
         } catch (ClientException $clientException) {
             $response = $clientException->getResponse();
+            $content = $response->getBody()->getContents();
+            $this->logger->error(sprintf(
+                "Client exception.%sStatus: %s Body: %s%s%s%s%s",
+                PHP_EOL,
+                $response->getStatusCode(),
+                $content,
+                PHP_EOL,
+                $clientException->getMessage(),
+                PHP_EOL,
+                $clientException->getTraceAsString()
+            ));
 
             if ($response->getStatusCode() === Response::HTTP_UNAUTHORIZED) {
-                $decodedResponse = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+                $decodedResponse = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
                 throw new AuthException($decodedResponse['url']);
             }
@@ -102,8 +107,8 @@ class IntegrationService
             [
                 RequestOptions::JSON => [
                     'state' => base64_encode(json_encode($state, JSON_THROW_ON_ERROR)),
-                    'userId' => $userId,
-                    'instanceId' => $this->instanceId,
+                    'userId' => $state['userId'],
+                    'instanceId' => $state['instanceId'],
                 ]
             ]
         );

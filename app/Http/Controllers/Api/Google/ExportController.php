@@ -5,15 +5,19 @@ namespace App\Http\Controllers\Api\Google;
 
 use App\Exceptions\ExternalServices\Google\AuthException;
 use App\Http\Controllers\Controller;
+use App\Jobs\ExportReportInGoogleSheetsJob;
+use App\Models\Property;
 use App\Services\External\Google\IntegrationService;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
+use Throwable;
 
 class ExportController extends Controller
 {
@@ -27,7 +31,11 @@ class ExportController extends Controller
         $this->httpClient = $httpClient;
     }
 
-    public function exportReportInit(Request $request): JsonResponse
+    /**
+     * @param Request $request
+     * @return JsonResponse|RedirectResponse
+     */
+    public function exportReportInit(Request $request)
     {
         $authUserId = Auth::id();
 
@@ -36,13 +44,22 @@ class ExportController extends Controller
         }
 
         try {
+            $state = $request->query->all();
+            $state['instanceId'] = Property::getInstanceId();
+            $state['userId'] = $authUserId;
+            $state['successRedirect'] = sprintf(
+                "http://%s/time-intervals/dashboard/export-in-sheets/end?%s",
+                config('app.domain') . ':10000', //TODO REMOVE PORT FROM REDIRECT
+                http_build_query(['state' => base64_encode(json_encode($state, JSON_THROW_ON_ERROR))])
+            );
+
             $this->logger->debug(sprintf(
-                "Attempt to check access user with id = %s permission export report",
+                "Attempt to check access user with id = %s permission to export the report",
                 $authUserId
             ));
-            (new IntegrationService($this->httpClient, $this->logger))->auth($authUserId, $request->request->all());
+            (new IntegrationService($this->httpClient, $this->logger))->auth($authUserId, $state);
 
-            return new JsonResponse([], Response::HTTP_NO_CONTENT);
+            return response()->redirectTo($state['successRedirect']);
         } catch (AuthException $authException) {
             return new JsonResponse([
                 'url' => $authException->getAuthUrl(),
@@ -51,6 +68,37 @@ class ExportController extends Controller
             $this->logger->alert(sprintf("%s%s%s", $throwable->getMessage(), PHP_EOL, $throwable->getTraceAsString()));
 
             return new JsonResponse(['message' => 'Operation was failed'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function exportReportEnd(\Illuminate\Http\Request $request): JsonResponse
+    {
+        try {
+            $this->logger->debug(sprintf(
+                "Request [start export in Google Sheet] was received. Content: %s",
+                json_encode($request->query, JSON_THROW_ON_ERROR)
+            ));
+
+            $this->dispatch(new ExportReportInGoogleSheetsJob(json_decode(
+                base64_decode($request->query->get('state')),
+                true,
+                512,
+                JSON_THROW_ON_ERROR
+            )));
+            $this->logger->debug(sprintf("The job %s was pushed to a job queue", ExportReportInGoogleSheetsJob::class));
+
+            return new JsonResponse([], Response::HTTP_NO_CONTENT);
+        } catch (Throwable $throwable) {
+            $this->logger->error(sprintf(
+                "Failed of registering the job %s%s%s%s%s",
+                ExportReportInGoogleSheetsJob::class,
+                PHP_EOL,
+                $throwable->getMessage(),
+                PHP_EOL,
+                $throwable->getTraceAsString()
+            ));
+
+            return new JsonResponse([], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
