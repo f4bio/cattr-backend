@@ -3,85 +3,115 @@
 
 namespace App\Services\External\Google;
 
-use App\Exceptions\ExternalServices\Google\Sheets\ExportException;
-use App\Helpers\ExternalServices\Google\Sheets\Reports\TimeIntervals\DashboardReportBuilder;
-use App\Services\TimeIntervalService;
-use Carbon\Carbon;
-use Google_Client;
-use Illuminate\Support\Facades\Validator;
+use App\Helpers\TimeIntervalReports\Reports\DashboardLargeReportBuilder;
+use App\Queries\TimeInterval\TimeIntervalReportForDashboard;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\RequestOptions;
+use Illuminate\Http\Response;
+use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Throwable;
 
 class SheetsService
 {
-    private Google_Client $googleClient;
-    private TimeIntervalService $timeIntervalService;
+    private LoggerInterface $logger;
+    private TimeIntervalReportForDashboard $query;
+    private Client $httpClient;
 
-    public function __construct(Google_Client $googleClient, TimeIntervalService $timeIntervalService)
+    public function __construct(LoggerInterface $logger, TimeIntervalReportForDashboard $query, Client $httpClient)
     {
-        $this->googleClient = $googleClient;
-        $this->timeIntervalService = $timeIntervalService;
+
+        $this->logger = $logger;
+        $this->query = $query;
+        $this->httpClient = $httpClient;
+    }
+
+    public function exportDashboardReport(array $params): void
+    {
+        $pathToFile = sprintf("%s/%s.json", sys_get_temp_dir(), uniqid(time() . '_', true));
+        $this->logger->debug(sprintf(
+            "The system is going to build a report to export in Google Sheet intermediate file = %s",
+            $pathToFile
+        ));
+        $reportBuilder = new DashboardLargeReportBuilder($pathToFile, $this->logger);
+        $this->query->buildQuery($params)->chunk(10000, [$reportBuilder, 'build']);
+        $this->logger->debug(sprintf(
+            "The report to export in Google Sheet was built as a file with a path %s",
+            $pathToFile
+        ));
+        $this->sendRequestExportReportToGoogleProxy(
+            $params['instanceId'],
+            $params['userId'],
+            $reportBuilder->getBuiltReport()
+        );
     }
 
     /**
-     * @param string $code - contains user's access token for Google service
-     * @param string $state - encoded parameters of query
-     * @return string - created sheet's URL
-     * @throws ExportException
+     * @param string $instanceId
+     * @param string $userId
+     * @param array $report
+     * @throws RuntimeException
      */
-    public function exportDashboardReport(string $code, string $state): string
+    private function sendRequestExportReportToGoogleProxy(string $instanceId, string $userId, array $report): void
     {
         try {
-            $token = $this->googleClient->fetchAccessTokenWithAuthCode($code);
-            $this->googleClient->setAccessToken($token);
-            $params = json_decode(base64_decode($state), true, 512, JSON_THROW_ON_ERROR);
-            $params = $this->prepareParamsForDashboardQuery($params);
-            $intervals = $this->timeIntervalService->getReportForDashBoard($params);
-            $title = sprintf("Project Report from %s to %s", $params['startAt'], $params['endAt']);
+            $body = [
+                'report' => json_encode($report, JSON_THROW_ON_ERROR),
+                'userId' => $userId,
+                'instanceId' => $instanceId,
+            ];
+            $endpoint = sprintf("%s/api/v1/google-sheet-report", config('app.google_integration_bus.url'));
 
-            return (new DashboardReportBuilder($this->googleClient))->build($intervals, $title);
-        } catch (Throwable $throwable) {
-            throw new ExportException($throwable->getMessage(), $throwable);
-        }
-    }
-
-    /**
-     * @param array $params
-     * @return array
-     * @throws ExportException
-     */
-    private function prepareParamsForDashboardQuery(array $params): array
-    {
-        $validator = Validator::make($params, [
-            'user_ids' => 'exists:users,id|array',
-            'project_ids' => 'nullable|exists:projects,id|array',
-            'start_at' => 'date|required',
-            'end_at' => 'date|required',
-        ]);
-
-        if ($validator->fails()) {
-            throw ExportException::fromMessageAndInvalidParams(
-                'Input parameters are invalid',
-                $validator->messages()->all()
+            $this->logger->debug(sprintf(
+                "The system is going to send a request to export report in Google Sheet.%sBody: %s%sURI: %s",
+                PHP_EOL,
+                json_encode($body, JSON_THROW_ON_ERROR),
+                PHP_EOL,
+                $endpoint
+            ));
+            $successResponse = $this->httpClient->request(
+                'POST',
+                $endpoint,
+                [
+                    RequestOptions::JSON => $body,
+                ]
             );
+
+            if ($successResponse->getStatusCode() === Response::HTTP_NO_CONTENT) {
+                $this->logger->debug('Export in Google Sheets was done successfully');
+
+                return;
+            }
+
+            throw new RuntimeException(sprintf(
+                "The system received a response with unknown response code %sBody:%s%sStatus%s",
+                PHP_EOL,
+                $successResponse->getBody()->getContents(),
+                PHP_EOL,
+                $successResponse->getStatusCode()
+            ));
+        } catch (ClientException $clientException) {
+            $failedResponse = $clientException->getResponse();
+            $this->logger->alert(sprintf(
+                "Sending the request to export in Google Sheets was failed.%s Status: %s%s Body: %s%s%s%s%s",
+                PHP_EOL,
+                $failedResponse->getStatusCode(),
+                PHP_EOL,
+                $failedResponse->getBody()->getContents(),
+                PHP_EOL,
+                $clientException->getMessage(),
+                PHP_EOL,
+                $clientException->getTraceAsString()
+            ));
+        } catch (Throwable $throwable) {
+            $this->logger->alert(sprintf(
+                "Sending the request to export in Google Sheets was failed.%s%s%s%s",
+                PHP_EOL,
+                $throwable->getMessage(),
+                PHP_EOL,
+                $throwable->getTraceAsString()
+            ));
         }
-
-        $userIds = $params['user_ids'] ?? [];
-        $projectIds = $params['projectIds'] ?? [];
-        $timezone = $params['timezone'] ?: 'UTC';
-        $timezoneOffset = (new Carbon())->setTimezone($timezone)->format('P');
-        $startAt = Carbon::parse($params['start_at'], $timezone)
-            ->tz('UTC')
-            ->toDateTimeString();
-        $endAt = Carbon::parse($params['end_at'], $timezone)
-            ->tz('UTC')
-            ->toDateTimeString();
-
-        return compact(
-            'startAt',
-            'endAt',
-            'timezoneOffset',
-            'projectIds',
-            'userIds'
-        );
     }
 }
