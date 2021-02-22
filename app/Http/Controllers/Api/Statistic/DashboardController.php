@@ -235,7 +235,7 @@ class DashboardController extends ReportController
             ->tz('UTC')
             ->toDateTimeString();
 
-        $reports = $timeIntervalService->getReportForDashBoard(compact(
+        $reports = $timeIntervalService->getReportForDashboard(compact(
             'startAt',
             'endAt',
             'timezoneOffset',

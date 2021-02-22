@@ -19,7 +19,7 @@ class TimeIntervalService
         $this->dashboardReportBuilder = $dashboardReportBuilder;
     }
 
-    public function getReportForDashBoard(array $params): array
+    public function getReportForDashboard(array $params): array
     {
         return $this->dashboardReportBuilder->build($this->queryReportForDashboard->searchByParams($params));
     }
