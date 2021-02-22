@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Google;
 
 use App\Exceptions\ExternalServices\Google\AuthException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Google\Sheets\ExportReportRequest;
 use App\Jobs\ExportReportInGoogleSheetsJob;
 use App\Models\Property;
 use App\Services\External\Google\IntegrationService;
@@ -16,7 +17,6 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
-use Symfony\Component\HttpFoundation\Request;
 use Throwable;
 
 class ExportController extends Controller
@@ -32,10 +32,10 @@ class ExportController extends Controller
     }
 
     /**
-     * @param Request $request
+     * @param ExportReportRequest $request
      * @return JsonResponse|RedirectResponse
      */
-    public function exportReportInit(Request $request)
+    public function exportReportInit(ExportReportRequest $request)
     {
         $authUserId = Auth::id();
 
@@ -44,7 +44,7 @@ class ExportController extends Controller
         }
 
         try {
-            $state = $request->query->all();
+            $state = $request->prepareParams();
             $state['instanceId'] = Property::getInstanceId();
             $state['userId'] = $authUserId;
             $state['successRedirect'] = sprintf(
