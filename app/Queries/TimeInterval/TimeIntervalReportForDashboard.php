@@ -4,6 +4,7 @@
 namespace App\Queries\TimeInterval;
 
 use App\Models\TimeInterval;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -15,13 +16,22 @@ class TimeIntervalReportForDashboard
      */
     public function searchByParams(array $params): Collection
     {
+        return $this->buildQuery($params)->get();
+    }
+
+    /**
+     * @param array $params
+     * @return EloquentBuilder|TimeInterval
+     */
+    public function buildQuery(array $params)
+    {
         $timezoneOffset = $params['timezoneOffset'];
         $userIds = $params['userIds'];
         $projectIds = $params['projectIds'] ?? [];
         $startAt = $params['startAt'];
         $endAt = $params['endAt'];
 
-        $intervals = TimeInterval::with('task', 'task.project')
+        $intervalsQb = TimeInterval::with('task', 'task.project')
             ->select(
                 'user_id',
                 'id',
@@ -42,11 +52,11 @@ class TimeIntervalReportForDashboard
             ->orderBy('start_at');
 
         if (!empty($projectIds)) {
-            $intervals = $intervals->whereHas('task', function ($query) use ($projectIds) {
+            $intervalsQb = $intervalsQb->whereHas('task', function ($query) use ($projectIds) {
                 $query->whereIn('tasks.project_id', $projectIds);
             });
         }
 
-        return $intervals->get();
+        return $intervalsQb;
     }
 }
