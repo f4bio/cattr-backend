@@ -40,26 +40,20 @@ class SheetsService
             "The report to export in Google Sheet was built as a file with a path %s",
             $pathToFile
         ));
-        $this->sendRequestExportReportToGoogleProxy(
-            $params['instanceId'],
-            $params['userId'],
-            $reportBuilder->getBuiltReport()
-        );
+        $this->sendRequestExportReportToGoogleProxy($params, $reportBuilder->getBuiltReport());
     }
 
     /**
-     * @param string $instanceId
-     * @param string $userId
+     * @param array $state
      * @param array $report
      * @throws RuntimeException
      */
-    private function sendRequestExportReportToGoogleProxy(string $instanceId, string $userId, array $report): void
+    private function sendRequestExportReportToGoogleProxy(array $state, array $report): void
     {
         try {
             $body = [
-                'report' => json_encode($report, JSON_THROW_ON_ERROR),
-                'userId' => $userId,
-                'instanceId' => $instanceId,
+                'report' => $report,
+                'state' => $state
             ];
             $endpoint = sprintf("%s/api/v1/google-sheet-report", config('app.google_integration_bus.url'));
 
