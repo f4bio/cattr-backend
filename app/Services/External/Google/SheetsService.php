@@ -7,8 +7,10 @@ use App\Helpers\TimeIntervalReports\Reports\DashboardLargeReportBuilder;
 use App\Queries\TimeInterval\TimeIntervalReportForDashboard;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Http\Response;
+use JsonException;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Throwable;
@@ -51,40 +53,7 @@ class SheetsService
     private function sendRequestExportReportToGoogleProxy(array $state, array $report): void
     {
         try {
-            $body = [
-                'report' => $report,
-                'state' => $state
-            ];
-            $endpoint = sprintf("%s/api/v1/google-sheet-report", config('app.google_integration_bus.url'));
-
-            $this->logger->debug(sprintf(
-                "The system is going to send a request to export report in Google Sheet.%sBody: %s%sURI: %s",
-                PHP_EOL,
-                json_encode($body, JSON_THROW_ON_ERROR),
-                PHP_EOL,
-                $endpoint
-            ));
-            $successResponse = $this->httpClient->request(
-                'POST',
-                $endpoint,
-                [
-                    RequestOptions::JSON => $body,
-                ]
-            );
-
-            if ($successResponse->getStatusCode() === Response::HTTP_NO_CONTENT) {
-                $this->logger->debug('Export in Google Sheets was done successfully');
-
-                return;
-            }
-
-            throw new RuntimeException(sprintf(
-                "The system received a response with unknown response code %sBody:%s%sStatus%s",
-                PHP_EOL,
-                $successResponse->getBody()->getContents(),
-                PHP_EOL,
-                $successResponse->getStatusCode()
-            ));
+            $this->trySendRequestExportReportToGoogleProxy($state, $report);
         } catch (ClientException $clientException) {
             $failedResponse = $clientException->getResponse();
             $this->logger->alert(sprintf(
@@ -107,5 +76,50 @@ class SheetsService
                 $throwable->getTraceAsString()
             ));
         }
+    }
+
+    /**
+     * @param array $state
+     * @param array $report
+     * @throws GuzzleException
+     * @throws JsonException
+     * @throws RuntimeException
+     */
+    private function trySendRequestExportReportToGoogleProxy(array $state, array $report): void
+    {
+        $body = [
+            'report' => $report,
+            'state' => $state
+        ];
+        $endpoint = sprintf("%s/api/v1/google-sheet-report", config('app.google_integration_bus.url'));
+
+        $this->logger->debug(sprintf(
+            "The system is going to send a request to export report in Google Sheet.%sBody: %s%sURI: %s",
+            PHP_EOL,
+            json_encode($body, JSON_THROW_ON_ERROR),
+            PHP_EOL,
+            $endpoint
+        ));
+        $successResponse = $this->httpClient->request(
+            'POST',
+            $endpoint,
+            [
+                RequestOptions::JSON => $body,
+            ]
+        );
+
+        if ($successResponse->getStatusCode() === Response::HTTP_NO_CONTENT) {
+            $this->logger->debug('Export in Google Sheets was done successfully');
+
+            return;
+        }
+
+        throw new RuntimeException(sprintf(
+            "The system received a response with unknown response code %sBody:%s%sStatus%s",
+            PHP_EOL,
+            $successResponse->getBody()->getContents(),
+            PHP_EOL,
+            $successResponse->getStatusCode()
+        ));
     }
 }
