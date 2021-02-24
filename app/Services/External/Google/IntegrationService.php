@@ -45,7 +45,7 @@ class IntegrationService
         $this->logger->debug('The system is going to send a request to check auth to export a report in Google Sheet.');
 
         try {
-            $response = $this->sendRequestAuth($state, $userId);
+            $response = $this->sendRequestAuth($state);
 
             $this->logger->debug(sprintf(
                 "The system received response just now. Body: %s, Status: %s",
@@ -91,12 +91,11 @@ class IntegrationService
 
     /**
      * @param array $state
-     * @param int $userId
      * @return ResponseInterface
      * @throws GuzzleException
      * @throws JsonException
      */
-    private function sendRequestAuth(array $state, int $userId): ResponseInterface
+    private function sendRequestAuth(array $state): ResponseInterface
     {
         return $this->httpClient->request(
             'POST',
