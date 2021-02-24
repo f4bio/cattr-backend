@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Mail\ResetPassword;
+use App\Notifications\Reports\ReportWasFailedNotification;
+use App\Notifications\Reports\ReportWasSentSuccessfullyNotification;
 use App\Scopes\UserScope;
 use App\Traits\HasRole;
 use Carbon\Carbon;
 use Eloquent as EloquentIdeHelper;
+use Hash;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,7 +21,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
-use Hash;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
@@ -381,6 +383,7 @@ class User extends Authenticatable implements JWTSubject
     {
         $this->notify(new ResetPassword($this->email, $token));
     }
+
     /**
      * Get the user's online status.
      *
@@ -407,5 +410,15 @@ class User extends Authenticatable implements JWTSubject
         }
 
         $this->attributes['password'] = $password;
+    }
+
+    public function sendNotificationExportWasEndedSuccessfully(string $url): void
+    {
+        $this->notify(new ReportWasSentSuccessfullyNotification($url, $this));
+    }
+
+    public function sendNotificationExportFailed(): void
+    {
+        $this->notify(new ReportWasFailedNotification($this));
     }
 }
