@@ -64,7 +64,7 @@ class ExportController extends Controller
         } catch (AuthException $authException) {
             return new JsonResponse([
                 'url' => $authException->getAuthUrl(),
-            ], Response::HTTP_UNAUTHORIZED);
+            ], Response::HTTP_PRECONDITION_REQUIRED);
         } catch (RuntimeException $throwable) {
             $this->logger->alert(sprintf("%s%s%s", $throwable->getMessage(), PHP_EOL, $throwable->getTraceAsString()));
 
