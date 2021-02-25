@@ -50,7 +50,7 @@ class ExportController extends Controller
             $state['userId'] = $authUserId;
             $state['successRedirect'] = sprintf(
                 "http://%s/time-intervals/dashboard/export-in-sheets/end?%s",
-                config('app.domain') . ':10000', //TODO REMOVE PORT FROM REDIRECT
+                config('app.domain'),
                 http_build_query(['state' => base64_encode(json_encode($state, JSON_THROW_ON_ERROR))])
             );
 
