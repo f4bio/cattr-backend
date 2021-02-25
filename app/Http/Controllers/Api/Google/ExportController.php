@@ -13,6 +13,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Psr\Log\LoggerInterface;
@@ -71,7 +72,7 @@ class ExportController extends Controller
         }
     }
 
-    public function exportReportEnd(\Illuminate\Http\Request $request): JsonResponse
+    public function exportReportEnd(Request $request): JsonResponse
     {
         try {
             $this->logger->debug(sprintf(
