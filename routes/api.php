@@ -34,9 +34,6 @@ Route::group([
     $router->get('screenshots/thumbs/{screenshot}', [ScreenshotStaticController::class, 'thumbnail']);
 });
 
-Route::get('time-intervals/dashboard/export-in-sheets', [ExportController::class, 'exportReportInit']);
-Route::get('time-intervals/dashboard/export-in-sheets/end', [ExportController::class, 'exportReportEnd']);
-
 // Routes for login/register processing
 Route::group([
     'middleware' => [EnsureIsInstalled::class, 'throttle:120,1'],
@@ -135,6 +132,9 @@ Route::group([
 
     $router->any('time-intervals/dashboard', [DashboardController::class, 'timeIntervals']);
     $router->any('time-intervals/day-duration', [DashboardController::class, 'timePerDay']);
+
+    Route::get('time-intervals/dashboard/export-in-sheets', [ExportController::class, 'exportReportInit']);
+    Route::get('time-intervals/dashboard/export-in-sheets/end', [ExportController::class, 'exportReportEnd']);
 
     //Time routes
     $router->any('time/total', [TimeController::class, 'total']);
