@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Priority;
+namespace App\Http\Requests\Status;
 
 use App\Http\Requests\FormRequest;
-use App\Models\User;
 
-class DestroyPriorityRequest extends FormRequest
+class ShowStatusRequest extends FormRequest
 {
     /**
      * Determine if user authorized to make this request.
@@ -14,9 +13,7 @@ class DestroyPriorityRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        /** @var User $user */
-        $user = auth()->user();
-        return $user->hasRole('admin');
+        return true;
     }
 
     /**
@@ -27,7 +24,7 @@ class DestroyPriorityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|int|exists:priorities,id',
+            'id' => 'required|integer|exists:statuses,id',
         ];
     }
 }

@@ -20,9 +20,7 @@ class TaskScope implements Scope
         $user = auth()->user();
 
         if (!$user || $user->hasRole('admin') || $user->hasRole('manager') || $user->hasRole('auditor')) {
-            return $builder
-                ->orderBy('active', 'desc')
-                ->orderBy('created_at', 'desc');
+            return $builder;
         }
 
         return $builder
@@ -30,22 +28,11 @@ class TaskScope implements Scope
             ->whereHas('users', static function (Builder $builder) use ($user) {
                 $builder->where('id', $user->id);
             })
-            ->whereHas('project.users', static function (Builder $builder) use ($user) {
-                $builder->where('projects_users.role_id', 2);
-            })
-            ->orWhereHas('project.users', static function (Builder $builder) use ($user) {
-                $builder
-                    // If the user is a project manager they can see all the project tasks
-                    ->where('user_id', $user->id)
-                    ->where('projects_users.role_id', 1);
-            })
             ->orWhereHas('project.users', static function (Builder $builder) use ($user) {
                 $builder
                     // If the user is a project auditor they can see all the project tasks
                     ->where('user_id', $user->id)
-                    ->where('projects_users.role_id', 3);
-            })
-            ->orderBy('active', 'desc')
-            ->orderBy('created_at', 'desc');
+                    ->whereIn('projects_users.role_id', [1, 2, 3]);
+            });
     }
 }

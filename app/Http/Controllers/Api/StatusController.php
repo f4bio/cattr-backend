@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\Priority\CountPriorityRequest;
-use App\Http\Requests\Priority\CreatePriorityRequest;
-use App\Http\Requests\Priority\ListPriorityRequest;
-use App\Http\Requests\Priority\ShowPriorityRequest;
-use App\Http\Requests\Priority\UpdatePriorityRequest;
-use App\Http\Requests\Project\DestroyProjectRequest;
-use App\Models\Priority;
+use App\Http\Requests\Status\CountStatusRequest;
+use App\Http\Requests\Status\CreateStatusRequest;
+use App\Http\Requests\Status\ListStatusRequest;
+use App\Http\Requests\Status\ShowStatusRequest;
+use App\Http\Requests\Status\UpdateStatusRequest;
+use App\Http\Requests\Status\DestroyStatusRequest;
+use App\Models\Status;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class PriorityController extends ItemController
+class StatusController extends ItemController
 {
     /**
-     * PriorityController constructor.
+     * StatusController constructor.
      */
     public function __construct()
     {
@@ -40,7 +40,7 @@ class PriorityController extends ItemController
      */
     public function getEventUniqueNamePart(): string
     {
-        return 'priority';
+        return 'status';
     }
 
     /**
@@ -50,29 +50,29 @@ class PriorityController extends ItemController
      */
     public function getItemClass(): string
     {
-        return Priority::class;
+        return Status::class;
     }
 
     /**
-     * @api             {post} /priorities/show Show
-     * @apiDescription  Show priority.
+     * @api             {post} /statuses/show Show
+     * @apiDescription  Show status.
      *
      * @apiVersion      1.0.0
-     * @apiName         Show Priority
-     * @apiGroup        Priority
+     * @apiName         Show Status
+     * @apiGroup        Status
      *
      * @apiUse          AuthHeader
      *
-     * @apiParam {Integer} id  Priority ID
+     * @apiParam {Integer} id  Status ID
      *
      * @apiParamExample {json} Request Example
      * {
      *   "id": 1
      * }
      *
-     * @apiSuccess {Object}   res      Priority
+     * @apiSuccess {Object}   res      Status
      *
-     * @apiUse          PriorityObject
+     * @apiUse StatusObject
      *
      * @apiSuccessExample {json} Response Example
      *  HTTP/1.1 200 OK
@@ -80,7 +80,7 @@ class PriorityController extends ItemController
      *    "res": {
      *      "id": 1
      *      "name": "Normal",
-     *      "color": null
+     *      "active": false
      *    }
      *  }
      *
@@ -88,24 +88,24 @@ class PriorityController extends ItemController
      * @apiUse          UnauthorizedError
      *
      */
-    public function show(ShowPriorityRequest $request): JsonResponse
+    public function show(ShowStatusRequest $request): JsonResponse
     {
         return $this->_show($request);
     }
 
     /**
-     * @api             {get} /priorities/list List
-     * @apiDescription  Get list of priorities.
+     * @api             {get} /statuses/list List
+     * @apiDescription  Get list of statuses.
      *
      * @apiVersion      1.0.0
-     * @apiName         Priority List
-     * @apiGroup        Priority
+     * @apiName         Status List
+     * @apiGroup        Status
      *
      * @apiUse          AuthHeader
      *
-     * @apiSuccess {Object}   res      Priority
+     * @apiSuccess {Object}   res      Status
      *
-     * @apiUse          PriorityObject
+     * @apiUse StatusObject
      *
      * @apiSuccessExample {json} Response Example
      *  HTTP/1.1 200 OK
@@ -113,7 +113,7 @@ class PriorityController extends ItemController
      *    "res": [{
      *      "id": 1
      *      "name": "Normal",
-     *      "color": null
+     *      "active": false
      *    }]
      *  }
      *
@@ -121,7 +121,7 @@ class PriorityController extends ItemController
      * @apiUse          UnauthorizedError
      *
      */
-    public function index(ListPriorityRequest $request): JsonResponse
+    public function index(ListStatusRequest $request): JsonResponse
     {
         return $this->_index($request);
     }
@@ -131,28 +131,27 @@ class PriorityController extends ItemController
      * @return JsonResponse
      * @throws Exception
      *
-     * @api             {post} /priorities/create Create
-     * @apiDescription  Creates priority
+     * @api             {post} /statuses/create Create
+     * @apiDescription  Creates status
      *
      * @apiVersion      1.0.0
-     * @apiName         Create Priority
-     * @apiGroup        Priority
+     * @apiName         Create Status
+     * @apiGroup        Status
      *
      * @apiUse          AuthHeader
      *
-     * @apiParam {String}  name   Priority name
-     * @apiParam {String}  color  Priority color
+     * @apiParam {String}  name   Status name
+     * @apiParam {String}  active Status active
      *
      * @apiParamExample {json} Request Example
      *  {
      *    "name": "Normal",
-     *    "color": null
+     *    "active": false
      *  }
      *
-     * @apiSuccess {Object}   res      Priority
+     * @apiSuccess {Object}   res      Status
      *
-     * @apiUse          PriorityObject
-     *
+     * @apiUse StatusObject
      *
      * @apiSuccessExample {json} Response Example
      *  HTTP/1.1 200 OK
@@ -160,7 +159,7 @@ class PriorityController extends ItemController
      *    "res": {
      *      "id": 1
      *      "name": "Normal",
-     *      "color": null
+     *      "active": false
      *    }
      *  }
      *
@@ -168,36 +167,36 @@ class PriorityController extends ItemController
      * @apiUse          UnauthorizedError
      *
      */
-    public function create(CreatePriorityRequest $request): JsonResponse
+    public function create(CreateStatusRequest $request): JsonResponse
     {
         return $this->_create($request);
     }
 
     /**
      * @throws Exception
-     * @api             {post} /priorities/edit Edit
-     * @apiDescription  Edit Priority
+     * @api             {post} /statuses/edit Edit
+     * @apiDescription  Edit Status
      *
      * @apiVersion      1.0.0
      * @apiName         Edit
-     * @apiGroup        Priority
+     * @apiGroup        Status
      *
      * @apiUse          AuthHeader
      *
      * @apiParam {Integer}  id           ID
-     * @apiParam {String}   name   Priority name
-     * @apiParam {String}   color  Priority color
+     * @apiParam {String}   name    Status name
+     * @apiParam {String}   active  Status active
      *
      * @apiParamExample {json} Simple Request Example
      *  {
      *    "id": 1,
      *    "name": "Normal",
-     *    "color": null
+     *    "active": false
      *  }
      *
-     * @apiSuccess {Object}   res      Priority
+     * @apiSuccess {Object}   res      Status
      *
-     * @apiUse          PriorityObject
+     * @apiUse         StatusObject
      *
      * @apiSuccessExample {json} Response Example
      *  HTTP/1.1 200 OK
@@ -205,7 +204,7 @@ class PriorityController extends ItemController
      *    "res": {
      *      "id": 1
      *      "name": "Normal",
-     *      "color": null
+     *      "active": false
      *    }
      *  }
      *
@@ -214,22 +213,22 @@ class PriorityController extends ItemController
      * @apiUse         UnauthorizedError
      * @apiUse         ItemNotFoundError
      */
-    public function edit(UpdatePriorityRequest $request): JsonResponse
+    public function edit(UpdateStatusRequest $request): JsonResponse
     {
         return $this->_edit($request);
     }
 
     /**
-     * @api             {post} /priorities/remove Destroy
+     * @api             {post} /statuses/remove Destroy
      * @apiDescription  Destroy User
      *
      * @apiVersion      1.0.0
-     * @apiName         Destroy Priority
-     * @apiGroup        Priority
+     * @apiName         Destroy Status
+     * @apiGroup        Status
      *
      * @apiUse          AuthHeader
      *
-     * @apiParam {Integer}  id  ID of the target priority
+     * @apiParam {Integer}  id  ID of the target status
      *
      * @apiParamExample {json} Request Example
      * {
@@ -249,7 +248,7 @@ class PriorityController extends ItemController
      * @apiUse          ForbiddenError
      * @apiUse          UnauthorizedError
      */
-    public function destroy(DestroyProjectRequest $request): JsonResponse
+    public function destroy(DestroyStatusRequest $request): JsonResponse
     {
         return $this->_destroy($request);
     }
@@ -259,7 +258,7 @@ class PriorityController extends ItemController
      * @return JsonResponse
      * @throws Exception
      */
-    public function count(CountPriorityRequest $request): JsonResponse
+    public function count(CountStatusRequest $request): JsonResponse
     {
         return $this->_count($request);
     }
