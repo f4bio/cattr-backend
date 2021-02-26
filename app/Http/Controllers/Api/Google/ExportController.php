@@ -103,7 +103,7 @@ class ExportController extends Controller
         }
     }
 
-    public function exportReportEnd(Request $request): JsonResponse
+    public function exportReportEnd(Request $request)
     {
         try {
             $this->logger->debug(sprintf(
@@ -119,7 +119,7 @@ class ExportController extends Controller
             )));
             $this->logger->debug(sprintf("The job %s was pushed to a job queue", ExportReportInGoogleSheetsJob::class));
 
-            return new JsonResponse([], Response::HTTP_NO_CONTENT);
+            return view('google/sheets/export_end_success');
         } catch (Throwable $throwable) {
             $this->logger->error(sprintf(
                 "Failed of registering the job %s%s%s%s%s",
@@ -130,7 +130,7 @@ class ExportController extends Controller
                 $throwable->getTraceAsString()
             ));
 
-            return new JsonResponse([], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return view('google/sheets/export_end_fail');
         }
     }
 }
