@@ -12,7 +12,6 @@ use App\Services\External\Google\IntegrationService;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -33,8 +32,40 @@ class ExportController extends Controller
     }
 
     /**
-     * @param ExportReportRequest $request
-     * @return JsonResponse|RedirectResponse
+     * @api             {get} time-intervals/dashboard/export-in-sheets Export report in Google Sheets
+     * @apiDescription  Init export to Google Sheets
+     *
+     * @apiVersion      1.0.0
+     * @apiName         Export in Google Sheets
+     * @apiGroup        Export in Google Sheets
+     *
+     * @apiUse          AuthHeader
+     *
+     * @apiParam (query string) {ISO8601} start_at
+     * @apiParam (query string) {ISO8601} end_at
+     * @apiParam (query string) {string} timezone example: Asia/Omsk
+     * @apiParam (query string) {int[]} user_ids  Users ID whom need include in the report
+     * @apiParam (query string) {[int[]]} project_ids  Projects ID which need include in the report \
+     * (default: include all projects)
+     *
+     * @apiSuccessExample {redirect} Application has access to user's Google Account.
+     *  Redirect to time-intervals/dashboard/export-in-sheets/end
+     *  HTTP/1.1 302 OK
+     *
+     * @apiUse          UnauthorizedError
+     *
+     * @apiErrorExample {json} Need give access to your Google Account:
+     *     HTTP/1.1 428 Returns url to auth in Google. If action will be authorized,
+     * then user will be redirect to time-intervals/dashboard/export-in-sheets/end
+     *     {
+     *       "url": "http://accounts.google.com/some-path"
+     *     }
+     *
+     * @apiErrorExample {json} Internal server error:
+     *     HTTP/1.1 500 Internal server error
+     *     {
+     *       "message": "Operation was failed"
+     *     }
      */
     public function exportReportInit(ExportReportRequest $request)
     {
