@@ -82,6 +82,8 @@ class IntegrationService
 
                 throw new AuthException($decodedResponse['url']);
             }
+
+            throw $clientException;
         } catch (Throwable $throwable) {
             $this->logger->alert(sprintf("%s%s%s", $throwable->getMessage(), PHP_EOL, $throwable->getTraceAsString()));
 
