@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\ScreenshotController;
 use App\Http\Controllers\Api\Statistic\DashboardController;
 use App\Http\Controllers\Api\Statistic\ProjectReportController;
 use App\Http\Controllers\Api\Statistic\TimeUseReportController;
+use App\Http\Controllers\Api\StatusController as ApiStatusController;
+use App\Http\Controllers\Api\TaskCommentController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TimeController;
 use App\Http\Controllers\Api\TimeIntervalController;
@@ -21,8 +23,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\InstallationController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\RegistrationController;
-use App\Http\Controllers\Api\StatusController as ApiStatusController;
-use App\Http\Controllers\Api\TaskCommentController;
 use App\Http\Controllers\ScreenshotController as ScreenshotStaticController;
 use App\Http\Controllers\StatusController;
 use App\Http\Middleware\EnsureIsInstalled;
@@ -35,6 +35,8 @@ Route::group([
     $router->get('screenshots/{screenshot}', [ScreenshotStaticController::class, 'screenshot']);
     $router->get('screenshots/thumbs/{screenshot}', [ScreenshotStaticController::class, 'thumbnail']);
 });
+
+Route::get('time-intervals/dashboard/export-in-sheets/end', [ExportController::class, 'exportReportEnd']);
 
 // Routes for login/register processing
 Route::group([
@@ -150,7 +152,6 @@ Route::group([
     $router->any('time-intervals/day-duration', [DashboardController::class, 'timePerDay']);
 
     Route::get('time-intervals/dashboard/export-in-sheets', [ExportController::class, 'exportReportInit']);
-    Route::get('time-intervals/dashboard/export-in-sheets/end', [ExportController::class, 'exportReportEnd']);
 
     //Time routes
     $router->any('time/total', [TimeController::class, 'total']);
