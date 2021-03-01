@@ -68,10 +68,12 @@ class IntegrationService
                 config('app.google_integration_bus.url'),
             ),
             [
+                RequestOptions::HEADERS => [
+                    'Cattr-user-id' => $state['userId'],
+                    'Cattr-instance-id' => $state['instanceId'],
+                ],
                 RequestOptions::JSON => [
-                    'state' => base64_encode(json_encode($state, JSON_THROW_ON_ERROR)),
-                    'userId' => $state['userId'],
-                    'instanceId' => $state['instanceId'],
+                    'state' => base64_encode(json_encode($state, JSON_THROW_ON_ERROR))
                 ]
             ]
         );
