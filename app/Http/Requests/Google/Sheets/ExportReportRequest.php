@@ -8,7 +8,7 @@ use App\Models\Property;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
-final class ExportReportRequest extends FormRequest
+class ExportReportRequest extends FormRequest
 {
     public function authorize(): bool
     {
