@@ -19,7 +19,6 @@ class IntegrationService
 {
     private ClientInterface $httpClient;
     private LoggerInterface $logger;
-    private string $instanceId;
 
     /**
      * IntegrationService constructor.
@@ -34,56 +33,19 @@ class IntegrationService
     }
 
     /**
-     * @param int $userId
      * @param array $state
      * @return void
      * @throws AuthException
      * @throws RuntimeException
      */
-    public function auth(int $userId, array $state = []): void
+    public function auth(array $state): void
     {
         $this->logger->debug('The system is going to send a request to check auth to export a report in Google Sheet.');
 
         try {
-            $response = $this->sendRequestAuth($state);
-
-            $this->logger->debug(sprintf(
-                "The system received response just now. Body: %s, Status: %s",
-                $response->getBody(),
-                $response->getStatusCode()
-            ));
-
-            if ($response->getStatusCode() === Response::HTTP_NO_CONTENT) {
-                $this->logger->debug(sprintf("User %d has access to export in Google Sheet", $userId));
-                return;
-            }
-
-            throw new RuntimeException(sprintf(
-                "Google Proxy service sent response with unknown status. Status: %s, Content: %s",
-                $response->getStatusCode(),
-                $response->getBody()->getContents()
-            ));
+            $this->tryAuth($state);
         } catch (ClientException $clientException) {
-            $response = $clientException->getResponse();
-            $content = $response->getBody()->getContents();
-            $this->logger->error(sprintf(
-                "Client exception.%sStatus: %s Body: %s%s%s%s%s",
-                PHP_EOL,
-                $response->getStatusCode(),
-                $content,
-                PHP_EOL,
-                $clientException->getMessage(),
-                PHP_EOL,
-                $clientException->getTraceAsString()
-            ));
-
-            if ($response->getStatusCode() === Response::HTTP_UNAUTHORIZED) {
-                $decodedResponse = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
-
-                throw new AuthException($decodedResponse['url']);
-            }
-
-            throw $clientException;
+            $this->handleClientExceptionsForAuth($clientException);
         } catch (Throwable $throwable) {
             $this->logger->alert(sprintf("%s%s%s", $throwable->getMessage(), PHP_EOL, $throwable->getTraceAsString()));
 
@@ -113,5 +75,61 @@ class IntegrationService
                 ]
             ]
         );
+    }
+
+    /**
+     * @param array $state
+     * @throws GuzzleException
+     * @throws JsonException
+     * @throws RuntimeException
+     */
+    private function tryAuth(array $state): void
+    {
+        $response = $this->sendRequestAuth($state);
+
+        $this->logger->debug(sprintf(
+            "The system received response just now. Body: %s, Status: %s",
+            $response->getBody(),
+            $response->getStatusCode()
+        ));
+
+        if ($response->getStatusCode() === Response::HTTP_NO_CONTENT) {
+            $this->logger->debug(sprintf("User %d has access to export in Google Sheet", $state['userId']));
+            return;
+        }
+
+        throw new RuntimeException(sprintf(
+            "Google Proxy service sent response with unknown status. Status: %s, Content: %s",
+            $response->getStatusCode(),
+            $response->getBody()->getContents()
+        ));
+    }
+
+    /**
+     * @param ClientException $clientException
+     * @throws AuthException
+     */
+    private function handleClientExceptionsForAuth(ClientException $clientException): void
+    {
+        $response = $clientException->getResponse();
+        $content = $response->getBody()->getContents();
+        $this->logger->error(sprintf(
+            "Client exception.%sStatus: %s Body: %s%s%s%s%s",
+            PHP_EOL,
+            $response->getStatusCode(),
+            $content,
+            PHP_EOL,
+            $clientException->getMessage(),
+            PHP_EOL,
+            $clientException->getTraceAsString()
+        ));
+
+        if ($response->getStatusCode() === Response::HTTP_UNAUTHORIZED) {
+            $decodedResponse = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+
+            throw new AuthException($decodedResponse['url']);
+        }
+
+        throw $clientException;
     }
 }

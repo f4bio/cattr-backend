@@ -68,6 +68,7 @@ return [
         Sentry\Laravel\ServiceProvider::class,
 
         App\Providers\SettingsServiceProvider::class,
+        App\Providers\HttpClientServiceProvider::class,
     ],
     'aliases' => [
 

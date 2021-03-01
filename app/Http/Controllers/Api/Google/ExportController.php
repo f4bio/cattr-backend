@@ -7,14 +7,10 @@ use App\Exceptions\ExternalServices\Google\AuthException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Google\Sheets\ExportReportRequest;
 use App\Jobs\ExportReportInGoogleSheetsJob;
-use App\Models\Property;
 use App\Services\External\Google\IntegrationService;
-use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Throwable;
@@ -22,13 +18,13 @@ use Throwable;
 class ExportController extends Controller
 {
     private LoggerInterface $logger;
-    private ClientInterface $httpClient;
+    private IntegrationService $integrationService;
 
-    public function __construct(LoggerInterface $logger, Client $httpClient)
+    public function __construct(LoggerInterface $logger, IntegrationService $integrationService)
     {
         parent::__construct();
         $this->logger = $logger;
-        $this->httpClient = $httpClient;
+        $this->integrationService = $integrationService;
     }
 
     /**
@@ -69,27 +65,13 @@ class ExportController extends Controller
      */
     public function exportReportInit(ExportReportRequest $request)
     {
-        $authUserId = Auth::id();
-
-        if ($authUserId === null) {
-            return new JsonResponse(['message' => 'Need to authenticate in Cattr'], Response::HTTP_UNAUTHORIZED);
-        }
-
         try {
-            $state = $request->prepareParams();
-            $state['instanceId'] = Property::getInstanceId();
-            $state['userId'] = $authUserId;
-            $state['successRedirect'] = sprintf(
-                "http://%s/time-intervals/dashboard/export-in-sheets/end?%s",
-                config('app.domain'),
-                http_build_query(['state' => base64_encode(json_encode($state, JSON_THROW_ON_ERROR))])
-            );
-
+            $state = $request->toState();
             $this->logger->debug(sprintf(
                 "Attempt to check access user with id = %s permission to export the report",
-                $authUserId
+                $request->getAuthUserId()
             ));
-            (new IntegrationService($this->httpClient, $this->logger))->auth($authUserId, $state);
+            $this->integrationService->auth($state);
 
             return response()->redirectTo($state['successRedirect']);
         } catch (AuthException $authException) {
