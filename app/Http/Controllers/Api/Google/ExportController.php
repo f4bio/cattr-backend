@@ -96,7 +96,7 @@ class ExportController extends Controller
             $this->dispatch(new ExportReportInGoogleSheetsJob($request->getDecodedStateAsArray()));
             $this->logger->debug(sprintf("The job %s was pushed to a job queue", ExportReportInGoogleSheetsJob::class));
 
-            return view('google/sheets/export_end_success');
+            return view('google.sheets.export_end_success');
         } catch (Throwable $throwable) {
             $this->logger->error(sprintf(
                 "Failed of registering the job %s%s%s%s%s",
@@ -107,7 +107,7 @@ class ExportController extends Controller
                 $throwable->getTraceAsString()
             ));
 
-            return view('google/sheets/export_end_fail');
+            return view('google.sheets.export_end_fail');
         }
     }
 }
