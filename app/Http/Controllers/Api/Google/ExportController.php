@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Google;
 
 use App\Exceptions\ExternalServices\Google\AuthException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Google\Sheets\ExportReportEndRequest;
 use App\Http\Requests\Google\Sheets\ExportReportRequest;
 use App\Jobs\ExportReportInGoogleSheetsJob;
 use App\Services\External\Google\IntegrationService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -85,20 +85,15 @@ class ExportController extends Controller
         }
     }
 
-    public function exportReportEnd(Request $request)
+    public function exportReportEnd(ExportReportEndRequest $request)
     {
         try {
             $this->logger->debug(sprintf(
                 "Request [start export in Google Sheet] was received. Content: %s",
-                json_encode($request->query, JSON_THROW_ON_ERROR)
+                $request->getDecodedStateAsJson()
             ));
 
-            $this->dispatch(new ExportReportInGoogleSheetsJob(json_decode(
-                base64_decode($request->query->get('state')),
-                true,
-                512,
-                JSON_THROW_ON_ERROR
-            )));
+            $this->dispatch(new ExportReportInGoogleSheetsJob($request->getDecodedStateAsArray()));
             $this->logger->debug(sprintf("The job %s was pushed to a job queue", ExportReportInGoogleSheetsJob::class));
 
             return view('google/sheets/export_end_success');
