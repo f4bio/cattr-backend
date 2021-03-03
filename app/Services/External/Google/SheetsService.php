@@ -116,10 +116,8 @@ class SheetsService
      */
     private function trySendRequestExportReportToGoogleProxy(array $state, array $report): string
     {
-        $body = [
-            'report' => $report,
-            'state' => $state
-        ];
+        $body = ['report' => $report, 'state' => $state];
+        $headers = ['Cattr-user-id' => $state['userId'], 'Cattr-instance-id' => $state['instanceId'],];
         $endpoint = sprintf("%s/api/v1/google-sheet-report", config('app.google_integration_bus.url'));
 
         $this->logger->debug(sprintf(
@@ -133,6 +131,7 @@ class SheetsService
             'POST',
             $endpoint,
             [
+                RequestOptions::HEADERS => $headers,
                 RequestOptions::JSON => $body,
             ]
         );
