@@ -2,10 +2,10 @@
 
 namespace Tests;
 
-use App\Models\User;
-use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * @method TestResponse get($uri, array $headers = [])
@@ -88,6 +88,13 @@ abstract class TestCase extends BaseTestCase
     public const HTTP_LOOP_DETECTED = 508;
     public const HTTP_NOT_EXTENDED = 510;
     public const HTTP_NETWORK_AUTHENTICATION_REQUIRED = 511;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->app->bind(LoggerInterface::class, fn() => new NullLogger());
+    }
+
 
     public function actingAs($user, $driver = null, int $tokenOffset = 0): self
     {
