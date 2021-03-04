@@ -12,7 +12,6 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
-use Illuminate\Http\Response;
 use JsonException;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -153,21 +152,20 @@ class SheetsService
                 RequestOptions::JSON => $body,
             ]
         );
+        $content = $successResponse->getBody()->getContents();
+        $this->logger->debug(sprintf(
+            "The system received success response. Status: %s Content: %s",
+            $successResponse->getStatusCode(),
+            $content
+        ));
 
-        if ($successResponse->getStatusCode() === Response::HTTP_OK) {
-            $this->logger->debug('Export in Google Sheets was done successfully');
-            $content = json_decode($successResponse->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        try {
+            $content = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
             return $content['url'];
+        } catch (Throwable $throwable) {
+            throw new RuntimeException(sprintf("Response is not contains field 'url' (link to created spreadsheet)"));
         }
-
-        throw new RuntimeException(sprintf(
-            "The system received a response with unknown response code %sBody:%s%sStatus%s",
-            PHP_EOL,
-            $successResponse->getBody()->getContents(),
-            PHP_EOL,
-            $successResponse->getStatusCode()
-        ));
     }
 
     /**
