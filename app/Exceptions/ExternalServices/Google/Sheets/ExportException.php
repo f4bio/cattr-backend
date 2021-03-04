@@ -6,6 +6,9 @@ namespace App\Exceptions\ExternalServices\Google\Sheets;
 use App\Exceptions\ImproveException;
 use Throwable;
 
+/**
+ * @codeCoverageIgnore
+ */
 class ExportException extends ImproveException
 {
     public function __construct(

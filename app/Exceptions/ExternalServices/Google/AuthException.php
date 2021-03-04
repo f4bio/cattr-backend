@@ -6,6 +6,9 @@ namespace App\Exceptions\ExternalServices\Google;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @codeCoverageIgnore
+ */
 class AuthException extends RuntimeException
 {
     private string $authUrl;
