@@ -88,22 +88,22 @@ class IntegrationService
     private function tryAuth(array $state): void
     {
         $response = $this->sendRequestAuth($state);
+        $content = $response->getBody()->getContents();
 
         $this->logger->debug(sprintf(
             "The system received response just now. Body: %s, Status: %s",
-            $response->getBody(),
+            $content,
             $response->getStatusCode()
         ));
 
         if ($response->getStatusCode() === Response::HTTP_NO_CONTENT) {
             $this->logger->debug(sprintf("User %d has access to export in Google Sheet", $state['userId']));
-            return;
         }
 
-        throw new RuntimeException(sprintf(
+        $this->logger->debug(sprintf(
             "Google Proxy service sent response with unknown status. Status: %s, Content: %s",
             $response->getStatusCode(),
-            $response->getBody()->getContents()
+            $content
         ));
     }
 
