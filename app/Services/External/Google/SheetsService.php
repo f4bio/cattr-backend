@@ -61,7 +61,9 @@ class SheetsService
     private function handleExportSuccessEnd(?User $user, string $url): void
     {
         try {
-            $user->sendNotificationExportWasEndedSuccessfully($url);
+            if ($user ?? null) {
+                $user->sendNotificationExportWasEndedSuccessfully($url);
+            }
         } catch (Throwable $throwable) {
             $this->logger->alert(sprintf(
                 "Sending a notification %s was failed",
@@ -112,6 +114,8 @@ class SheetsService
                 PHP_EOL,
                 $clientException->getTraceAsString()
             ));
+
+            throw $clientException;
         } catch (Throwable $throwable) {
             $this->logger->alert(sprintf(
                 "Sending the request to export in Google Sheets was failed.%s%s%s%s",
@@ -120,6 +124,8 @@ class SheetsService
                 PHP_EOL,
                 $throwable->getTraceAsString()
             ));
+
+            throw $throwable;
         }
     }
 
