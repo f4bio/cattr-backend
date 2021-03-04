@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Jobs;
+namespace Tests\Unit\Jobs;
 
 use App\Jobs\ExportReportInGoogleSheetsJob;
 use App\Services\External\Google\SheetsService;
