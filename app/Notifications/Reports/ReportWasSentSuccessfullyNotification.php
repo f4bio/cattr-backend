@@ -7,6 +7,9 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+/**
+ * @codeCoverageIgnore
+ */
 class ReportWasSentSuccessfullyNotification extends Notification
 {
     use Queueable;
