@@ -34,6 +34,17 @@ class SheetsService
 
     public function exportDashboardReport(array $params): void
     {
+        $user = $this->findUser($params);
+
+        try {
+            $this->handleExportSuccessEnd($user, $this->tryExportReport($params));
+        } catch (Throwable $throwable) {
+            $this->handleExportFailed($throwable, $user);
+        }
+    }
+
+    private function findUser($params): ?User
+    {
         $user = User::find($params['userId']);
 
         if ($user !== null) {
@@ -42,33 +53,38 @@ class SheetsService
                 $params['userId']
             ));
         }
-        try {
-            $url = $this->tryExportReport($params);
 
-            try {
-                $user->sendNotificationExportWasEndedSuccessfully($url);
-            } catch (Throwable $throwable) {
-                $this->logger->alert(sprintf(
-                    "Sending a notification %s was failed",
-                    ReportWasSentSuccessfullyNotification::class
-                ));
-            }
+        return $user;
+    }
+
+    private function handleExportSuccessEnd(?User $user, string $url): void
+    {
+        try {
+            $user->sendNotificationExportWasEndedSuccessfully($url);
         } catch (Throwable $throwable) {
             $this->logger->alert(sprintf(
-                "Export was failed.%s%s%s%s",
-                PHP_EOL,
-                $throwable->getMessage(),
-                PHP_EOL,
-                $throwable->getTraceAsString()
+                "Sending a notification %s was failed",
+                ReportWasSentSuccessfullyNotification::class
             ));
+        }
+    }
 
-            try {
-                if ($user ?? null) {
-                    $user->sendNotificationExportFailed();
-                }
-            } catch (Throwable $throwable) {
-                $this->logger->alert('Sending a notification ' . ReportWasFailedNotification::class . ' was failed');
+    private function handleExportFailed(Throwable $throwable, ?User $user)
+    {
+        $this->logger->alert(sprintf(
+            "Export was failed.%s%s%s%s",
+            PHP_EOL,
+            $throwable->getMessage(),
+            PHP_EOL,
+            $throwable->getTraceAsString()
+        ));
+
+        try {
+            if ($user ?? null) {
+                $user->sendNotificationExportFailed();
             }
+        } catch (Throwable $throwable) {
+            $this->logger->alert('Sending a notification ' . ReportWasFailedNotification::class . ' was failed');
         }
     }
 
