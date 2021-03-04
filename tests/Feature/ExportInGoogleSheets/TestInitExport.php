@@ -41,6 +41,9 @@ class TestInitExport extends TestCase
         $this->getJson(self::URI)->assertUnauthorized();
     }
 
+    /**
+     * This test is required an actual google proxy instance. Please configure your env file.
+     */
     public function test_need_auth_via_google(): void
     {
         $uri = self::URI . '?' . http_build_query(['start_at' => '2021-02-10', 'end_at' => '2021-02-10']);
