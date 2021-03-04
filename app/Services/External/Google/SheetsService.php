@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Notifications\Reports\ReportWasFailedNotification;
 use App\Notifications\Reports\ReportWasSentSuccessfullyNotification;
 use App\Queries\TimeInterval\TimeIntervalReportForDashboard;
-use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
@@ -22,11 +22,13 @@ class SheetsService
 {
     private LoggerInterface $logger;
     private TimeIntervalReportForDashboard $query;
-    private Client $httpClient;
+    private ClientInterface $httpClient;
 
-    public function __construct(LoggerInterface $logger, TimeIntervalReportForDashboard $query, Client $httpClient)
-    {
-
+    public function __construct(
+        LoggerInterface $logger,
+        TimeIntervalReportForDashboard $query,
+        ClientInterface $httpClient
+    ) {
         $this->logger = $logger;
         $this->query = $query;
         $this->httpClient = $httpClient;
@@ -69,7 +71,7 @@ class SheetsService
         }
     }
 
-    private function handleExportFailed(Throwable $throwable, ?User $user)
+    private function handleExportFailed(Throwable $throwable, ?User $user): void
     {
         $this->logger->alert(sprintf(
             "Export was failed.%s%s%s%s",
