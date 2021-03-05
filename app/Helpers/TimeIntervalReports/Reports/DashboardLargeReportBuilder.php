@@ -69,7 +69,7 @@ class DashboardLargeReportBuilder
         return $projects;
     }
 
-    /**     *
+    /**
      * @param Collection|TimeInterval[] $intervals
      * @param array $projects
      * @return array
@@ -77,20 +77,34 @@ class DashboardLargeReportBuilder
      */
     private function intervalsToProjects(Collection $intervals, array $projects = []): array
     {
-        foreach ($intervals as $interval) {
-            $user = $interval->user;
-            $task = $interval->task;
-            $project = $task->project;
-            $diff = strtotime($interval->end_at) - strtotime($interval->start_at);
-            $projects[$project->id]['name'] = $project->name;
-            $projects[$project->id]['users'][$user->id]['name'] = $user->full_name;
-            $projects[$project->id]['users'][$user->id]['tasks'][$task->id]['name'] = $task->task_name;
-            $alreadyAddedTime = $projects[$project->id]['users'][$user->id]['tasks'][$task->id]['time'] ?? 0;
-            $alreadyAddedTime += $diff;
-            $projects[$project->id]['users'][$user->id]['tasks'][$task->id]['time'] = $alreadyAddedTime;
-        }
+        try {
+            foreach ($intervals as $interval) {
+                $user = $interval->user;
+                $task = $interval->task;
+                $project = $task->project;
+                $diff = strtotime($interval->end_at) - strtotime($interval->start_at);
+                $projects[$project->id]['name'] = $project->name;
+                $projects[$project->id]['users'][$user->id]['name'] = $user->full_name;
+                $projects[$project->id]['users'][$user->id]['tasks'][$task->id]['name'] = $task->task_name;
+                $alreadyAddedTime = $projects[$project->id]['users'][$user->id]['tasks'][$task->id]['time'] ?? 0;
+                $alreadyAddedTime += $diff;
+                $projects[$project->id]['users'][$user->id]['tasks'][$task->id]['time'] = $alreadyAddedTime;
+            }
 
-        return $projects;
+            return $projects;
+        } catch (Throwable $throwable) {
+            $message = 'Operation transform intervals to projects report was failed.';
+            $this->logger->alert(sprintf(
+                "%s%s%s%s%s",
+                $message,
+                PHP_EOL,
+                $throwable->getMessage(),
+                PHP_EOL,
+                $throwable->getTraceAsString()
+            ));
+
+            throw new RuntimeException($message, 0, $throwable);
+        }
     }
 
     /**
