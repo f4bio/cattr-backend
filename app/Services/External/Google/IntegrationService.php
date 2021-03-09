@@ -8,9 +8,9 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
+use Illuminate\Support\Facades\Log;
 use JsonException;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -18,18 +18,10 @@ use Throwable;
 class IntegrationService
 {
     private ClientInterface $httpClient;
-    private LoggerInterface $logger;
 
-    /**
-     * IntegrationService constructor.
-     * @param ClientInterface $httpClient
-     * @param LoggerInterface $logger
-     * @throws RuntimeException
-     */
-    public function __construct(ClientInterface $httpClient, LoggerInterface $logger)
+    public function __construct(ClientInterface $httpClient)
     {
         $this->httpClient = $httpClient;
-        $this->logger = $logger;
     }
 
     /**
@@ -40,14 +32,14 @@ class IntegrationService
      */
     public function auth(array $state): void
     {
-        $this->logger->debug('The system is going to send a request to check auth to export a report in Google Sheet.');
+        Log::debug('The system is going to send a request to check auth to export a report in Google Sheet.');
 
         try {
             $this->tryAuth($state);
         } catch (ClientException $clientException) {
             $this->handleClientExceptionsForAuth($clientException);
         } catch (Throwable $throwable) {
-            $this->logger->alert(sprintf("%s%s%s", $throwable->getMessage(), PHP_EOL, $throwable->getTraceAsString()));
+            Log::alert(sprintf("%s%s%s", $throwable->getMessage(), PHP_EOL, $throwable->getTraceAsString()));
 
             throw new RuntimeException('Operation check access to export was failed', 0, $throwable);
         }
@@ -74,7 +66,8 @@ class IntegrationService
                 ],
                 RequestOptions::JSON => [
                     'state' => base64_encode(json_encode($state, JSON_THROW_ON_ERROR))
-                ]
+                ],
+                RequestOptions::CONNECT_TIMEOUT => 5,
             ]
         );
     }
@@ -90,17 +83,17 @@ class IntegrationService
         $response = $this->sendRequestAuth($state);
         $content = $response->getBody()->getContents();
 
-        $this->logger->debug(sprintf(
+        Log::debug(sprintf(
             "The system received response just now. Body: %s, Status: %s",
             $content,
             $response->getStatusCode()
         ));
 
         if ($response->getStatusCode() === Response::HTTP_NO_CONTENT) {
-            $this->logger->debug(sprintf("User %d has access to export in Google Sheet", $state['userId']));
+            Log::debug(sprintf("User %d has access to export in Google Sheet", $state['userId']));
         }
 
-        $this->logger->debug(sprintf(
+        Log::debug(sprintf(
             "Google Proxy service sent response with unknown status. Status: %s, Content: %s",
             $response->getStatusCode(),
             $content
@@ -115,7 +108,7 @@ class IntegrationService
     {
         $response = $clientException->getResponse();
         $content = $response->getBody()->getContents();
-        $this->logger->error(sprintf(
+        Log::error(sprintf(
             "Client exception.%sStatus: %s Body: %s%s%s%s%s",
             PHP_EOL,
             $response->getStatusCode(),

@@ -11,19 +11,17 @@ use App\Jobs\ExportReportInGoogleSheetsJob;
 use App\Services\External\Google\IntegrationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
 
 class ExportController extends Controller
 {
-    private LoggerInterface $logger;
     private IntegrationService $integrationService;
 
-    public function __construct(LoggerInterface $logger, IntegrationService $integrationService)
+    public function __construct(IntegrationService $integrationService)
     {
         parent::__construct();
-        $this->logger = $logger;
         $this->integrationService = $integrationService;
     }
 
@@ -67,7 +65,7 @@ class ExportController extends Controller
     {
         try {
             $state = $request->toState();
-            $this->logger->debug(sprintf(
+            Log::debug(sprintf(
                 "Attempt to check access user with id = %s permission to export the report",
                 $request->getAuthUserId()
             ));
@@ -79,7 +77,7 @@ class ExportController extends Controller
                 'url' => $authException->getAuthUrl(),
             ], Response::HTTP_PRECONDITION_REQUIRED);
         } catch (RuntimeException $throwable) {
-            $this->logger->alert(sprintf("%s%s%s", $throwable->getMessage(), PHP_EOL, $throwable->getTraceAsString()));
+            Log::alert(sprintf("%s%s%s", $throwable->getMessage(), PHP_EOL, $throwable->getTraceAsString()));
 
             return new JsonResponse(['message' => 'Operation was failed'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -88,17 +86,17 @@ class ExportController extends Controller
     public function exportReportEnd(ExportReportEndRequest $request)
     {
         try {
-            $this->logger->debug(sprintf(
+            Log::debug(sprintf(
                 "Request [start export in Google Sheet] was received. Content: %s",
                 $request->getDecodedStateAsJson()
             ));
 
             $this->dispatch(new ExportReportInGoogleSheetsJob($request->getDecodedStateAsArray()));
-            $this->logger->debug(sprintf("The job %s was pushed to a job queue", ExportReportInGoogleSheetsJob::class));
+            Log::debug(sprintf("The job %s was pushed to a job queue", ExportReportInGoogleSheetsJob::class));
 
             return view('google.sheets.export_end_success');
         } catch (Throwable $throwable) {
-            $this->logger->error(sprintf(
+            Log::error(sprintf(
                 "Failed of registering the job %s%s%s%s%s",
                 ExportReportInGoogleSheetsJob::class,
                 PHP_EOL,

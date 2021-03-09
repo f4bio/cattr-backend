@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Notification;
 use LogicException;
 use Mockery;
 use Mockery\MockInterface;
-use Psr\Log\NullLogger;
 use RuntimeException;
 use Tests\Facades\UserFactory;
 use Tests\TestCase;
@@ -71,7 +70,6 @@ class SheetsServiceTest extends TestCase
     private function createMockedService(string $case): SheetsService
     {
         return new SheetsService(
-            new NullLogger(),
             new TimeIntervalReportForDashboard(),
             $this->createMockedHttpClient($this->getMockeryCallbackForTestCase($case))
         );

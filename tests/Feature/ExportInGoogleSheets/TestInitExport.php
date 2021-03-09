@@ -10,7 +10,6 @@ use App\Services\External\Google\IntegrationService;
 use Illuminate\Http\Response;
 use Mockery;
 use Mockery\MockInterface;
-use Psr\Log\NullLogger;
 use RuntimeException;
 use Tests\Facades\UserFactory;
 use Tests\TestCase;
@@ -91,7 +90,7 @@ class TestInitExport extends TestCase
 
         return $this->instance(
             ExportController::class,
-            new ExportController(new NullLogger(), $integrationService)
+            new ExportController($integrationService)
         );
     }
 

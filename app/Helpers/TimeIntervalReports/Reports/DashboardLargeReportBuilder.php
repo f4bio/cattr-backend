@@ -5,19 +5,17 @@ namespace App\Helpers\TimeIntervalReports\Reports;
 
 use App\Models\TimeInterval;
 use Illuminate\Support\Collection;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
 
 class DashboardLargeReportBuilder
 {
     private string $pathToIntermediateFile;
-    private LoggerInterface $logger;
 
-    public function __construct(string $pathToIntermediateFile, LoggerInterface $logger)
+    public function __construct(string $pathToIntermediateFile)
     {
         $this->pathToIntermediateFile = $pathToIntermediateFile;
-        $this->logger = $logger;
     }
 
     /**
@@ -54,7 +52,7 @@ class DashboardLargeReportBuilder
                 $projects = [];
             }
         } catch (Throwable $e) {
-            $this->logger->error(sprintf(
+            Log::error(sprintf(
                 "Reading from the intermediate file %s was failed%s%s%s%s",
                 $this->pathToIntermediateFile,
                 PHP_EOL,
@@ -94,7 +92,7 @@ class DashboardLargeReportBuilder
             return $projects;
         } catch (Throwable $throwable) {
             $message = 'Operation transform intervals to projects report was failed.';
-            $this->logger->alert(sprintf(
+            Log::alert(sprintf(
                 "%s%s%s%s%s",
                 $message,
                 PHP_EOL,
@@ -116,7 +114,7 @@ class DashboardLargeReportBuilder
         try {
             file_put_contents($this->pathToIntermediateFile, json_encode($projects, JSON_THROW_ON_ERROR));
         } catch (Throwable $e) {
-            $this->logger->error(sprintf(
+            Log::error(sprintf(
                 "Writing the to intermediate file was failed %s%s%s%s",
                 PHP_EOL,
                 $e->getMessage(),

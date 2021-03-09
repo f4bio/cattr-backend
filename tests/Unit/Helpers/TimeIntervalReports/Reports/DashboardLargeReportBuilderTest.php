@@ -4,7 +4,6 @@ namespace Tests\Unit\Helpers\TimeIntervalReports\Reports;
 
 use App\Helpers\TimeIntervalReports\Reports\DashboardLargeReportBuilder;
 use Illuminate\Support\Collection;
-use Psr\Log\NullLogger;
 use RuntimeException;
 use stdClass;
 use Tests\TestCase;
@@ -21,7 +20,7 @@ class DashboardLargeReportBuilderTest extends TestCase
     {
 
         $pathToFile = sprintf("%s/%s.test.json", sys_get_temp_dir(), uniqid(time() . '_', true));
-        $reportBuilder = new DashboardLargeReportBuilder($pathToFile, new NullLogger());
+        $reportBuilder = new DashboardLargeReportBuilder($pathToFile);
 
         $reportBuilder->build($input);
         self::assertSame($output, $reportBuilder->getBuiltReport());
@@ -38,7 +37,7 @@ class DashboardLargeReportBuilderTest extends TestCase
     public function test_method_must_throw_exception_if_input_is_invalid()
     {
         $pathToFile = sprintf("%s/%s.test.json", sys_get_temp_dir(), uniqid(time() . '_', true));
-        $reportBuilder = new DashboardLargeReportBuilder($pathToFile, new NullLogger());
+        $reportBuilder = new DashboardLargeReportBuilder($pathToFile);
         $this->expectException(RuntimeException::class);
         $reportBuilder->build(new Collection([new stdClass()]));
     }
@@ -46,7 +45,7 @@ class DashboardLargeReportBuilderTest extends TestCase
     public function test_method_must_returns_invalid_data()
     {
         $pathToFile = sprintf("%s/%s.test.json", sys_get_temp_dir(), uniqid(time() . '_', true));
-        $reportBuilder = new DashboardLargeReportBuilder($pathToFile, new NullLogger());
+        $reportBuilder = new DashboardLargeReportBuilder($pathToFile);
 
         $reportBuilder->build($this->loadIntervals());
         $report = $this->loadReport();
