@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use App\Exceptions\Entities\AuthorizationException;
 use Eloquent as EloquentIdeHelper;
-use Exception;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -12,8 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Auth;
-use Throwable;
 
 /**
  * @apiDefine RoleObject
@@ -70,12 +66,6 @@ use Throwable;
  * @method static QueryBuilder|Role withTrashed()
  * @method static QueryBuilder|Role withoutTrashed()
  * @mixin EloquentIdeHelper
- * @property-read int|null $projects_count
- * @property-read int|null $rules_count
- * @property-read int|null $users_count
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Role newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Role newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Role query()
  */
 class Role extends Model
 {

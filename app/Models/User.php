@@ -7,6 +7,7 @@ use App\Scopes\UserScope;
 use App\Traits\HasRole;
 use Carbon\Carbon;
 use Eloquent as EloquentIdeHelper;
+use Hash;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,7 +19,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
-use Hash;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
@@ -179,6 +179,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @method static QueryBuilder|User withoutTrashed()
  * @mixin EloquentIdeHelper
  * @property-read int|null $tokens_count
+ * @property-read bool $delete_in_process
  */
 class User extends Authenticatable implements JWTSubject
 {
@@ -230,6 +231,7 @@ class User extends Authenticatable implements JWTSubject
         'nonce',
         'client_installed',
         'last_activity',
+        'delete_in_process',
     ];
 
     /**
@@ -259,6 +261,7 @@ class User extends Authenticatable implements JWTSubject
         'invitation_sent' => 'boolean',
         'nonce' => 'integer',
         'client_installed' => 'integer',
+        'delete_in_process' => 'boolean',
     ];
 
     /**

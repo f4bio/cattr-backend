@@ -3,24 +3,25 @@
 namespace App\Http\Controllers\Api;
 
 use App;
-use Settings;
-use Carbon\Carbon;
-use Exception;
-use Filter;
+use App\Http\Requests\User\CreateUserRequest;
+use App\Http\Requests\User\DestroyUserRequest;
+use App\Http\Requests\User\EditUserRequest;
+use App\Http\Requests\User\SendInviteUserRequest;
+use App\Http\Requests\User\ShowUserRequest;
 use App\Mail\UserCreated;
 use App\Models\User;
+use Carbon\Carbon;
+use Event;
+use Exception;
+use Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Event;
-use Mail;
-use App\Http\Requests\User\CreateUserRequest;
-use App\Http\Requests\User\EditUserRequest;
-use App\Http\Requests\User\SendInviteUserRequest;
-use App\Http\Requests\User\ShowUserRequest;
-use App\Http\Requests\User\DestroyUserRequest;
+use Illuminate\Http\Response;
 use Illuminate\Support\Str;
+use Mail;
+use Settings;
 
 class UserController extends ItemController
 {
@@ -545,5 +546,52 @@ class UserController extends ItemController
         }
 
         return $query;
+    }
+
+    /**
+     * @param int $userId
+     * @return JsonResponse
+     *
+     * @api             {delete} /v1/users/:id DeleteUser
+     * @apiParam {Number} id Users unique ID.
+     * @apiDescription  Initial procedure 'delete user'
+     *
+     * @apiVersion      1.0.0
+     * @apiName         DeleteUser
+     * @apiGroup        User
+     *
+     * @apiUse          AuthHeader
+     *
+     * @apiPermission   users_remove
+     * @apiPermission   users_full_access
+     *
+     * @apiSuccessExample {json} Request to delete the user with :id was accepted
+     *  HTTP/1.1 202 Accepted
+     *
+     * @apiUse         UnauthorizedError
+     * @apiUse         ItemNotFoundError
+     */
+    public function delete(int $userId): JsonResponse
+    {
+        $user = User::query()->find($userId);
+
+        if (!$user) {
+            return new JsonResponse(
+                Filter::process($this->getEventUniqueName('answer.error.item.edit'), [
+                    'error_type' => 'query.item_not_found',
+                    'message' => 'User not found',
+                ]),
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        if (!$user->delete_in_process) {
+            $user->fill(['delete_in_process' => true]);
+            $user->save();
+
+            $this->dispatch(new App\Jobs\DeleteUser($userId));
+        }
+
+        return response()->json(null, Response::HTTP_ACCEPTED);
     }
 }

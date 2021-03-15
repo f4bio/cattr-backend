@@ -3,15 +3,14 @@
 namespace App\Http\Middleware;
 
 use App\Exceptions\Entities\AuthorizationException;
+use Auth;
 use Closure;
 use Illuminate\Auth\Middleware\Authenticate as BaseAuthenticate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Auth;
-use DB;
+use JWTAuth;
 use Lang;
 use Tymon\JWTAuth\Exceptions\JWTException;
-use JWTAuth;
 use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 
 class Authenticate extends BaseAuthenticate
@@ -40,7 +39,7 @@ class Authenticate extends BaseAuthenticate
 
         $user = Auth::user();
 
-        if (!$user || !$user->active) {
+        if (!$user || !$user->active || $user->delete_in_process) {
             auth()->invalidate();
             throw new AuthorizationException(AuthorizationException::ERROR_TYPE_USER_DISABLED);
         }
