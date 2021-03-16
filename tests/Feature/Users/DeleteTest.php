@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use LogicException;
 use Tests\Facades\UserFactory;
 use Tests\TestCase;
+use Tests\Utils\Reflection\ReflectionHelper;
 
 /**
  * Class DeleteTest
@@ -42,6 +43,7 @@ class DeleteTest extends TestCase
         $mockAppService = $this->expectsJobs(DeleteUser::class);
         $response = $mockAppService->actingAs($this->admin)
             ->delete(sprintf("users/%s", $this->userIsNotDeleteProcess->id));
+        $this->checkJobParams();
 
         $response->assertStatus(Response::HTTP_ACCEPTED);
     }
@@ -94,5 +96,16 @@ class DeleteTest extends TestCase
         }
 
         return $userAsArray;
+    }
+
+    private function checkJobParams(): void
+    {
+        $this->beforeApplicationDestroyed(function () {
+            $dispatchedJob = $this->dispatchedJobs[0];
+            $this->assertEquals(
+                $this->userIsNotDeleteProcess->id,
+                ReflectionHelper::getValue($dispatchedJob, 'userId')
+            );
+        });
     }
 }
