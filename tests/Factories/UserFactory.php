@@ -19,6 +19,7 @@ class UserFactory extends Factory
 
     private User $user;
     private bool $isAdmin = false;
+    private array $params = [];
 
 
     protected function getModelInstance(): Model
@@ -28,10 +29,6 @@ class UserFactory extends Factory
 
     public function create(bool $userRandomData = true): User
     {
-        $faker = FakerFactory::create();
-
-        $userAsArray['email'] = $faker->email;
-
         if ($userRandomData) {
             $modelData = $this->createRandomModelData();
         }
@@ -40,9 +37,8 @@ class UserFactory extends Factory
             $modelData['is_admin'] = true;
         }
 
-        if ($userRandomData) {
-            $this->user = User::create($modelData);
-        }
+        $modelData = $userRandomData ? $modelData : $this->params;
+        $this->user = User::create($modelData);
 
         if ($this->tokensAmount) {
             $this->createTokens();
@@ -56,6 +52,18 @@ class UserFactory extends Factory
 
         if ($this->timestampsHidden) {
             $this->hideTimestamps();
+        }
+
+        if ($tasks = $modelData['tasks'] ?? null) {
+            $this->user->tasks()->createMany($tasks);
+        }
+
+        if ($tasksComments = $modelData['tasks_comments'] ?? null) {
+            $this->user->tasksComments()->createMany($tasksComments);
+        }
+
+        if ($timeIntervals = $modelData['time_intervals'] ?? null) {
+            $this->user->timeIntervals()->createMany($tasksComments);
         }
 
         return $this->user;
@@ -142,8 +150,7 @@ class UserFactory extends Factory
 
     public function setParams(array $params)
     {
-        $this->user = new User();
-        $this->user->fill($params);
+        $this->params = $params;
 
         return $this;
     }
