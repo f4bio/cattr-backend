@@ -21,6 +21,7 @@ class UserDeleteHelper
     {
         $this->saveTasks();
         $this->saveTimeIntervals();
+        $this->saveTasksComments();
     }
 
     private function saveTasks(): void
@@ -32,6 +33,12 @@ class UserDeleteHelper
     private function saveTimeIntervals(): void
     {
         DB::table('time_intervals')->where('user_id', '=', $this->userForDeleting->id)
+            ->update(['user_id' => $this->serviceAccount->id]);
+    }
+
+    private function saveTasksComments(): void
+    {
+        DB::table('task_comment')->where('user_id', '=', $this->userForDeleting->id)
             ->update(['user_id' => $this->serviceAccount->id]);
     }
 }
