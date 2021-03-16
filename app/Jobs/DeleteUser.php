@@ -32,7 +32,6 @@ class DeleteUser implements ShouldQueue
      * Execute the job.
      *
      * @param ServiceAccountHelper $serviceAccountHelper
-     * @param UserDeleteHelper $userDeleteHelper
      * @return void
      */
     public function handle(ServiceAccountHelper $serviceAccountHelper)
@@ -46,5 +45,6 @@ class DeleteUser implements ShouldQueue
         }
 
         (new UserDeleteHelper($user, $serviceAccountHelper->findOrCreate()))->saveDataOfUserInServiceAccount();
+        $user->forceDelete();
     }
 }
