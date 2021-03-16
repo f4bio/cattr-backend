@@ -411,4 +411,12 @@ class User extends Authenticatable implements JWTSubject
 
         $this->attributes['password'] = $password;
     }
+
+    /**
+     * @return HasMany|TaskComment
+     */
+    public function tasksComments()
+    {
+        return $this->hasMany(TaskComment::class, 'user_id');
+    }
 }
