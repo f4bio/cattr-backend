@@ -26,14 +26,23 @@ class UserFactory extends Factory
         return $this->user;
     }
 
-    public function create(): User
+    public function create(bool $userRandomData = true): User
     {
-        $modelData = $this->createRandomModelData();
+        $faker = FakerFactory::create();
+
+        $userAsArray['email'] = $faker->email;
+
+        if ($userRandomData) {
+            $modelData = $this->createRandomModelData();
+        }
 
         if ($this->isAdmin) {
             $modelData['is_admin'] = true;
         }
-        $this->user = User::create($modelData);
+
+        if ($userRandomData) {
+            $this->user = User::create($modelData);
+        }
 
         if ($this->tokensAmount) {
             $this->createTokens();
@@ -128,6 +137,14 @@ class UserFactory extends Factory
     public function asUser(): self
     {
         $this->roleId = self::USER_ROLE;
+        return $this;
+    }
+
+    public function setParams(array $params)
+    {
+        $this->user = new User();
+        $this->user->fill($params);
+
         return $this;
     }
 
