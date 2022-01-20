@@ -3,22 +3,22 @@
 namespace Tests\Feature\CompanySettings;
 
 use App\Models\User;
-use Tests\Facades\UserFactory;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class IndexTest extends TestCase
 {
     private const URI = 'company-settings';
 
-    private User $admin;
-    private User $user;
+    private $admin;
+    private Model $user;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->withTokens()->asAdmin()->create();
-        $this->user = UserFactory::refresh()->withTokens()->asUser()->create();
+        $this->user = User::factory()->create();
+        $this->admin = User::factory()->asAdmin()->create();
     }
 
     public function test_index_as_admin(): void

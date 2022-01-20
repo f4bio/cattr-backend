@@ -4,51 +4,42 @@ namespace Tests\Feature\Projects;
 
 use App\Models\Project;
 use App\Models\User;
-use Tests\Facades\ProjectFactory;
-use Tests\Facades\UserFactory;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class RemoveTest extends TestCase
 {
     private const URI = 'projects/remove';
 
-    /** @var User $admin */
-    private User $admin;
-    /** @var User $manager */
-    private User $manager;
-    /** @var User $auditor */
-    private User $auditor;
-    /** @var User $user */
-    private User $user;
+    private $admin;
+    private $manager;
+    private $auditor;
+    private Model $user;
 
-    /** @var User $projectManager */
-    private User $projectManager;
-    /** @var User $projectAuditor */
-    private User $projectAuditor;
-    /** @var User $projectUser */
-    private User $projectUser;
+    private Model $projectManager;
+    private Model $projectAuditor;
+    private Model $projectUser;
 
-    /** @var Project $project */
-    private Project $project;
+    private Model $project;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
-        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
-        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
-        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->user = User::factory()->create();
+        $this->manager = User::factory()->asManager()->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->auditor = User::factory()->asAuditor()->create();
 
-        $this->project = ProjectFactory::create();
+        $this->project = Project::factory()->create()->makeHidden('can', 'created_at', 'updated_at');
 
-        $this->projectManager = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectManager = User::factory()->create();
         $this->projectManager->projects()->attach($this->project->id, ['role_id' => 1]);
 
-        $this->projectAuditor = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectAuditor = User::factory()->create();
         $this->projectAuditor->projects()->attach($this->project->id, ['role_id' => 3]);
 
-        $this->projectUser = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectUser = User::factory()->create();
         $this->projectUser->projects()->attach($this->project->id, ['role_id' => 2]);
     }
 
@@ -92,9 +83,7 @@ class RemoveTest extends TestCase
     public function test_remove_as_project_manager(): void
     {
         $this->assertDatabaseHas('projects', $this->project->toArray());
-
         $response = $this->actingAs($this->projectManager)->postJson(self::URI, $this->project->only('id'));
-
         $response->assertOk();
         $this->assertSoftDeleted('projects', $this->project->only('id'));
     }

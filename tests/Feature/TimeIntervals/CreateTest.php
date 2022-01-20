@@ -2,32 +2,25 @@
 
 namespace Tests\Feature\TimeIntervals;
 
-use App\Models\Task;
 use App\Models\TimeInterval;
 use App\Models\User;
-use Tests\Facades\IntervalFactory;
-use Tests\Facades\TaskFactory;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class CreateTest extends TestCase
 {
     private const URI = 'time-intervals/create';
 
-    private User $admin;
-    private Task $task;
+    private $admin;
 
-    private array $intervalData;
+    private $intervalData;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::asAdmin()->withTokens()->create();
+        $this->admin = User::factory()->asAdmin()->create();
 
-        $this->task = TaskFactory::forUser($this->admin)->create();
-
-        $this->intervalData = IntervalFactory::createRandomModelDataWithRelation();
+        $this->intervalData = TimeInterval::factory()->create()->toArray();
         $this->intervalData['user_id'] = $this->admin->id;
     }
 

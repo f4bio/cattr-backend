@@ -3,20 +3,20 @@
 namespace Tests\Feature\Users;
 
 use App\Models\User;
-use Tests\Facades\UserFactory;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class ActivityTest extends TestCase
 {
     private const URI = 'users/activity';
 
-    private User $admin;
+    private Model $admin;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
+        $this->admin = User::factory()->create();
     }
 
     public function test_update(): void

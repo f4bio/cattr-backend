@@ -5,8 +5,6 @@ namespace Tests\Feature\TimeIntervals;
 
 use App\Models\TimeInterval;
 use App\Models\User;
-use Tests\Facades\IntervalFactory;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class CountTest extends TestCase
@@ -15,15 +13,15 @@ class CountTest extends TestCase
 
     private const SCREENSHOTS_AMOUNT = 10;
 
-    private User $admin;
+    private $admin;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::asAdmin()->withTokens()->create();
+        $this->admin = User::factory()->asAdmin()->create();
 
-        IntervalFactory::createMany(self::SCREENSHOTS_AMOUNT);
+        TimeInterval::factory()->count(self::SCREENSHOTS_AMOUNT)->make();
     }
 
     public function test_count(): void

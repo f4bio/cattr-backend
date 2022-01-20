@@ -4,21 +4,20 @@ namespace Tests\Feature\Auth\PasswordReset;
 
 use App\Mail\ResetPassword;
 use App\Models\User;
-use Notification;
-use Tests\Facades\UserFactory;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class RequestTest extends TestCase
 {
     private const URI = 'auth/password/reset/request';
 
-    private User $user;
+    private $user;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->user = UserFactory::create();
+        $this->user = User::factory()->create();
     }
 
     public function test_request(): void
@@ -37,7 +36,7 @@ class RequestTest extends TestCase
         Notification::fake();
         Notification::assertNothingSent();
 
-        $response = $this->postJson(self::URI, ['email' => 'wronemail@example.com']);
+        $response = $this->postJson(self::URI, ['email' => 'wrongemail@example.com']);
 
         $response->assertNotFound('authorization.user_not_found');
         Notification::assertNothingSent();

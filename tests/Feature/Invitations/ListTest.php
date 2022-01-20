@@ -4,26 +4,26 @@ namespace Tests\Feature\Invitations;
 
 use App\Models\invitation;
 use App\Models\User;
-use Tests\Facades\UserFactory;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class ListTest extends TestCase
 {
     private const URI = 'invitations/list';
 
-    private User $admin;
-    private User $manager;
-    private User $auditor;
-    private User $user;
+    private $admin;
+    private $manager;
+    private $auditor;
+    private Model $user;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
-        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
-        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
-        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->user = User::factory()->create();
+        $this->manager = User::factory()->asManager()->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->auditor = User::factory()->asAuditor()->create();
     }
 
     public function test_list_as_admin(): void

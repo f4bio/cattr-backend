@@ -2,23 +2,19 @@
 
 namespace Tests\Feature\Projects;
 
+use App\Models\Project;
 use App\Models\User;
-use Tests\Facades\ProjectFactory;
-use Tests\Facades\UserFactory;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class CreateTest extends TestCase
 {
     private const URI = 'projects/create';
 
-    /** @var User $admin */
-    private User $admin;
-    /** @var User $manager */
-    private User $manager;
-    /** @var User $auditor */
-    private User $auditor;
-    /** @var User $user */
-    private User $user;
+    private $admin;
+    private $manager;
+    private $auditor;
+    private Model $user;
 
     private array $projectData;
 
@@ -26,12 +22,13 @@ class CreateTest extends TestCase
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
-        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
-        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
-        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->user = User::factory()->create();
+        $this->manager = User::factory()->asManager()->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->auditor = User::factory()->asAuditor()->create();
 
-        $this->projectData = ProjectFactory::createRandomModelData();
+        $this->projectData = Project::factory()->make()
+            ->makeHidden('can', 'updated_at', 'created_at')->toArray();
     }
 
     public function test_create_as_admin(): void

@@ -4,9 +4,8 @@ namespace Tests\Feature\Projects;
 
 use App\Models\Project;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\WithFaker;
-use Tests\Facades\ProjectFactory;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class EditTest extends TestCase
@@ -15,43 +14,35 @@ class EditTest extends TestCase
 
     private const URI = 'projects/edit';
 
-    /** @var User $admin */
-    private User $admin;
-    /** @var User $manager */
-    private User $manager;
-    /** @var User $auditor */
-    private User $auditor;
-    /** @var User $user */
-    private User $user;
+    private $admin;
+    private $manager;
+    private $auditor;
+    private Model $user;
 
-    /** @var User $projectManager */
-    private User $projectManager;
-    /** @var User $projectAuditor */
-    private User $projectAuditor;
-    /** @var User $projectUser */
-    private User $projectUser;
+    private $projectManager;
+    private $projectAuditor;
+    private Model $projectUser;
 
-    /** @var Project $project */
-    private Project $project;
+    private Model $project;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
-        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
-        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
-        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->user = User::factory()->create();
+        $this->manager = User::factory()->asManager()->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->auditor = User::factory()->asAuditor()->create();
 
-        $this->project = ProjectFactory::create();
+        $this->project = Project::factory()->create()->makeHidden('can', 'created_at', 'updated_at');
 
-        $this->projectManager = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectManager = User::factory()->create();
         $this->projectManager->projects()->attach($this->project->id, ['role_id' => 1]);
 
-        $this->projectAuditor = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectAuditor = User::factory()->create();
         $this->projectAuditor->projects()->attach($this->project->id, ['role_id' => 3]);
 
-        $this->projectUser = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectUser = User::factory()->create();
         $this->projectUser->projects()->attach($this->project->id, ['role_id' => 2]);
     }
 
@@ -61,7 +52,6 @@ class EditTest extends TestCase
         $this->project->description = $this->faker->text;
 
         $response = $this->actingAs($this->admin)->postJson(self::URI, $this->project->toArray());
-
         $response->assertOk();
         $response->assertJson(['res' => $this->project->toArray()]);
         $this->assertDatabaseHas('projects', $this->project->toArray());
@@ -133,7 +123,7 @@ class EditTest extends TestCase
 
     public function test_not_existing_project(): void
     {
-        $this->project->id = $this->faker->randomNumber();
+        $this->project->id = 4815162342;
 
         $response = $this->actingAs($this->admin)->postJson(self::URI, $this->project->toArray());
 

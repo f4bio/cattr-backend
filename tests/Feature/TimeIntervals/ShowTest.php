@@ -5,39 +5,32 @@ namespace Tests\Feature\TimeIntervals;
 
 use App\Models\TimeInterval;
 use App\Models\User;
-use Tests\Facades\IntervalFactory;
-use Tests\Facades\UserFactory;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class ShowTest extends TestCase
 {
     private const URI = 'time-intervals/show';
 
-    /** @var User $admin */
-    private User $admin;
-    /** @var User $manager */
-    private User $manager;
-    /** @var User $auditor */
-    private User $auditor;
-    /** @var User $user */
-    private User $user;
+    private $admin;
+    private $manager;
+    private $auditor;
+    private Model $user;
 
-    /** @var TimeInterval $timeInterval */
-    private TimeInterval $timeInterval;
-    /** @var TimeInterval $timeIntervalForUser */
-    private TimeInterval $timeIntervalForUser;
+    private Model $timeInterval;
+    private Model $timeIntervalForUser;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
-        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
-        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
-        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->manager = User::factory()->asManager()->create();
+        $this->auditor = User::factory()->asAuditor()->create();
+        $this->user = User::factory()->create();
 
-        $this->timeInterval = IntervalFactory::create();
-        $this->timeIntervalForUser = IntervalFactory::forUser($this->user)->create();
+        $this->timeInterval = TimeInterval::factory()->create();
+        $this->timeIntervalForUser = TimeInterval::factory()->for($this->user)->create();
     }
 
     public function test_show_as_admin(): void

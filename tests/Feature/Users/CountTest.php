@@ -3,7 +3,7 @@
 namespace Tests\Feature\Users;
 
 use App\Models\User;
-use Tests\Facades\UserFactory;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class CountTest extends TestCase
@@ -12,15 +12,15 @@ class CountTest extends TestCase
 
     private const USERS_AMOUNT = 10;
 
-    private User $admin;
+    private Model $admin;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::asAdmin()->withTokens()->create();
+        $this->admin = User::factory()->create();
 
-        UserFactory::createMany(self::USERS_AMOUNT);
+        User::factory()->count(self::USERS_AMOUNT)->create();
     }
 
     public function test_count(): void

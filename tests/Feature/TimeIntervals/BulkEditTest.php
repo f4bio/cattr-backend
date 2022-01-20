@@ -9,9 +9,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Tests\Facades\IntervalFactory;
-use Tests\Facades\TaskFactory;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class BulkEditTest extends TestCase
@@ -22,43 +19,37 @@ class BulkEditTest extends TestCase
 
     private const INTERVALS_AMOUNT = 5;
 
-    /** @var User $admin */
     private User $admin;
-    /** @var User $manager */
     private User $manager;
-    /** @var User $auditor */
     private User $auditor;
-    /** @var User $user */
-    private User $user;
+    private $user;
 
     private Collection $intervals;
     private Collection $intervalsForManager;
     private Collection $intervalsForAuditor;
     private Collection $intervalsForUser;
 
-    private Task $task;
+    private $task;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
-        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
-        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
-        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->manager = User::factory()->asManager()->create();
+        $this->auditor = User::factory()->asAuditor()->create();
+        $this->user = User::factory()->create();
 
-        $this->task = TaskFactory::refresh()->create();
+        $this->task = Task::factory()->withProject()->create();
 
-        $this->intervals = IntervalFactory::refresh()->withRandomRelations()->createMany(self::INTERVALS_AMOUNT);
-        $this->intervalsForManager = IntervalFactory::refresh()
-            ->forUser($this->manager)
-            ->createMany(self::INTERVALS_AMOUNT);
-        $this->intervalsForAuditor = IntervalFactory::refresh()
-            ->forUser($this->auditor)
-            ->createMany(self::INTERVALS_AMOUNT);
-        $this->intervalsForUser = IntervalFactory::refresh()
-            ->forUser($this->user)
-            ->createMany(self::INTERVALS_AMOUNT);
+
+        $this->intervalsForManager = TimeInterval::factory()->for($this->manager)
+            ->count(self::INTERVALS_AMOUNT)->create();
+        $this->intervalsForAuditor = TimeInterval::factory()->for($this->auditor)
+            ->count(self::INTERVALS_AMOUNT)->create();
+        $this->intervalsForUser = TimeInterval::factory()->for($this->user)
+            ->count(self::INTERVALS_AMOUNT)->create();
+        $this->intervals = TimeInterval::factory()->count(self::INTERVALS_AMOUNT)->create();
     }
 
     public function test_bulk_edit_as_admin(): void

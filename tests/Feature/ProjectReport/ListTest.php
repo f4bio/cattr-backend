@@ -6,8 +6,6 @@ use App\Models\TimeInterval;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Tests\Facades\IntervalFactory;
-use Tests\Facades\ScreenshotFactory;
 use Tests\Facades\UserFactory;
 use Tests\TestCase;
 use Tests\TestResponse;
@@ -18,12 +16,12 @@ class ListTest extends TestCase
 
     private const INTERVALS_AMOUNT = 10;
 
-    private User $admin;
+    private $admin;
 
     private array $pids;
     private array $uids;
 
-    private Collection $intervals;
+    private $intervals;
 
     private int $duration = 0;
     private array $requestData;
@@ -44,15 +42,16 @@ class ListTest extends TestCase
 
         $this->admin = UserFactory::asAdmin()->withTokens()->create();
 
-        $this->intervals = IntervalFactory::withRandomRelations()->createMany(self::INTERVALS_AMOUNT);
+        $this->intervals = TimeInterval::factory()->count(self::INTERVALS_AMOUNT)->create();
 
         $this->intervals->each(function (TimeInterval $interval) {
-            ScreenshotFactory::fake()->forInterval($interval)->create();
+            //ScreenshotFactory::fake()->forInterval($interval)->create();
             $this->uids[] = $interval->user_id;
             $this->pids[] = $interval->task->project->id;
             $this->duration += Carbon::parse($interval->end_at)->diffInSeconds($interval->start_at);
         });
 
+        $this->withoutExceptionHandling();
 
         $this->requestData = [
             'start_at' => $this->intervals->min('start_at'),

@@ -3,8 +3,8 @@
 namespace Tests\Feature\Users;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\WithFaker;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 use Faker\Factory as FakerFactory;
 
@@ -14,23 +14,19 @@ class EditTest extends TestCase
 
     private const URI = '/users/edit';
 
-    /** @var User $admin */
-    private User $admin;
-    /** @var User $manager */
-    private User $manager;
-    /** @var User $auditor */
-    private User $auditor;
-    /** @var User $user */
-    private User $user;
+    private $admin;
+    private $manager;
+    private $auditor;
+    private Model $user;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
-        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
-        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
-        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->manager = User::factory()->asManager()->create();
+        $this->auditor = User::factory()->asAuditor()->create();
+        $this->user = User::factory()->create();
     }
 
     public function test_edit_as_admin(): void

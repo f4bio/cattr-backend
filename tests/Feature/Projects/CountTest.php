@@ -4,8 +4,6 @@ namespace Tests\Feature\Projects;
 
 use App\Models\Project;
 use App\Models\User;
-use Tests\Facades\ProjectFactory;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class CountTest extends TestCase
@@ -20,9 +18,8 @@ class CountTest extends TestCase
     {
         parent::setUp();
 
-        $this->admin = UserFactory::asAdmin()->withTokens()->create();
-
-        ProjectFactory::createMany(self::PROJECTS_AMOUNT);
+        $this->admin = User::factory()->asAdmin()->create();
+        Project::factory()->count(self::PROJECTS_AMOUNT)->create();
     }
 
     public function test_count(): void

@@ -2,11 +2,9 @@
 
 namespace Tests\Feature\Time;
 
+use App\Models\TimeInterval;
 use App\Models\User;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
-use Tests\Facades\IntervalFactory;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class TotalTest extends TestCase
@@ -15,17 +13,17 @@ class TotalTest extends TestCase
 
     private const INTERVALS_AMOUNT = 10;
 
-    private Collection $intervals;
+    private $intervals;
 
-    private User $admin;
+    private $admin;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::asAdmin()->withTokens()->create();
+        $this->admin = User::factory()->asAdmin()->create();
 
-        $this->intervals = IntervalFactory::forUser($this->admin)->createMany(self::INTERVALS_AMOUNT);
+        $this->intervals = TimeInterval::factory()->for($this->admin)->count(self::INTERVALS_AMOUNT)->create();
     }
 
     public function test_total(): void
@@ -38,7 +36,6 @@ class TotalTest extends TestCase
 
         $response = $this->actingAs($this->admin)->postJson(self::URI, $requestData);
         $response->assertOk();
-
         $totalTime = $this->intervals->sum(static function ($interval) {
             return Carbon::parse($interval->end_at)->diffInSeconds($interval->start_at);
         });

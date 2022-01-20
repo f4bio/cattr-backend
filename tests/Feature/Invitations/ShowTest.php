@@ -3,30 +3,29 @@ namespace Tests\Feature\Invitations;
 
 use App\Models\User;
 use App\Models\Invitation;
-use Tests\Facades\InvitationFactory;
-use Tests\Facades\UserFactory;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class ShowTest extends TestCase
 {
     private const URI = 'invitations/show';
 
-    private User $admin;
-    private User $manager;
-    private User $auditor;
-    private User $user;
-    private Invitation $invitation;
+    private $admin;
+    private $manager;
+    private $auditor;
+    private Model $user;
+    private Model $invitation;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
-        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
-        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
-        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->user = User::factory()->create();
+        $this->manager = User::factory()->asManager()->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->auditor = User::factory()->asAuditor()->create();
 
-        $this->invitation = InvitationFactory::create();
+        $this->invitation = Invitation::factory()->create();
     }
 
     public function test_show_as_admin(): void

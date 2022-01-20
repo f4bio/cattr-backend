@@ -14,59 +14,47 @@ class ListTest extends TestCase
 
     private const TASKS_AMOUNT = 10;
 
-    /** @var User $admin */
-    private User $admin;
-    /** @var User $manager */
-    private User $manager;
-    /** @var User $auditor */
-    private User $auditor;
-    /** @var User $user */
-    private User $user;
+    private $admin;
+    private $manager;
+    private $auditor;
+    private $user;
 
-    /** @var User $projectManager */
-    private User $projectManager;
-    /** @var User $projectAuditor */
-    private User $projectAuditor;
-    /** @var User $projectUser */
-    private User $projectUser;
+    private $projectManager;
+    private $projectAuditor;
+    private $projectUser;
 
-    /** @var User $assignedUser */
-    private User $assignedUser;
-    /** @var Task $assignedTask */
-    private Task $assignedTask;
+    private $assignedUser;
+    private $assignedTask;
 
-    /** @var User $assignedProjectUser */
-    private User $assignedProjectUser;
-    /** @var Task $assignedProjectTask */
-    private Task $assignedProjectTask;
+    private $assignedProjectUser;
+    private $assignedProjectTask;
 
-    /** @var Task $task */
-    private Task $task;
+    private $task;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
-        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
-        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
-        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->manager = User::factory()->asManager()->create();
+        $this->auditor = User::factory()->asAuditor()->create();
+        $this->user = User::factory()->create();
 
         $this->task = TaskFactory::create();
 
-        $this->projectManager = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectManager = User::factory()->create();
         $this->projectManager->projects()->attach($this->task->project_id, ['role_id' => 1]);
 
-        $this->projectAuditor = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectAuditor = User::factory()->create();
         $this->projectAuditor->projects()->attach($this->task->project_id, ['role_id' => 3]);
 
-        $this->projectUser = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectUser = User::factory()->create();
         $this->projectUser->projects()->attach($this->task->project_id, ['role_id' => 2]);
 
-        $this->assignedUser = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->assignedUser = User::factory()->create();
         $this->assignedTask = TaskFactory::refresh()->forUser($this->assignedUser)->create();
 
-        $this->assignedProjectUser = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->assignedProjectUser = User::factory()->create();
         $this->assignedProjectTask = TaskFactory::refresh()->forUser($this->assignedProjectUser)->create();
         $this->assignedProjectUser->projects()->attach($this->assignedProjectTask->project_id, ['role_id' => 2]);
     }

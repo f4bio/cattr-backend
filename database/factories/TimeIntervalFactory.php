@@ -2,9 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Contracts\ScreenshotService;
 use App\Helpers\FakeScreenshotGenerator;
+use App\Models\Task;
 use App\Models\TimeInterval;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TimeIntervalFactory extends Factory
@@ -13,14 +15,18 @@ class TimeIntervalFactory extends Factory
 
     public function definition(): array
     {
+        $randomDateTime = $this->faker->unique()->dateTimeThisYear();
+        $randomDateTime = Carbon::instance($randomDateTime);
+
+
         return [
-            'start_at' => now()->subMinutes(5)->toDateTimeString(),
-            'end_at' => now()->toDateTimeString(),
-            'mouse_fill' => $this->faker->numberBetween(0, 100),
-            'keyboard_fill' => $this->faker->numberBetween(0, 100),
-            'activity_fill' => function (array $attributes) {
-                return +$attributes['keyboard_fill'] + $attributes['mouse_fill'];
-            },
+            'task_id' => Task::factory()->withProject()->create()->id,
+            'user_id' => User::factory()->create()->id,
+            'end_at' => $randomDateTime->toIso8601String(),
+            'start_at' => $randomDateTime->subSeconds(random_int(1, 3600))->toIso8601String(),
+            'activity_fill' => random_int(1, 100),
+            'mouse_fill' => random_int(1, 100),
+            'keyboard_fill' => random_int(1, 100),
         ];
     }
 

@@ -4,22 +4,22 @@ namespace Tests\Feature\Invitations;
 
 use App\Models\Invitation;
 use App\Models\User;
-use Tests\Facades\UserFactory;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class CountTest extends TestCase
 {
     private const URI = 'invitations/count';
 
-    private User $admin;
-    private User $user;
+    private $admin;
+    private Model $user;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->user = UserFactory::withTokens()->asUser()->create();
-        $this->admin = UserFactory::withTokens()->asAdmin()->create();
+        $this->user = User::factory()->create();
+        $this->admin = User::factory()->asAdmin()->create();
     }
 
     public function test_count_as_admin(): void

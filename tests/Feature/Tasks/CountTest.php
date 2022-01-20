@@ -4,8 +4,6 @@ namespace Tests\Feature\Tasks;
 
 use App\Models\Task;
 use App\Models\User;
-use Tests\Facades\TaskFactory;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class CountTest extends TestCase
@@ -20,10 +18,11 @@ class CountTest extends TestCase
     {
         parent::setUp();
 
-        $this->admin = UserFactory::asAdmin()->withTokens()->create();
+        $this->admin = User::factory()->asAdmin()->create();
 
-        TaskFactory::createMany(self::TASKS_AMOUNT);
+        Task::factory()->count(self::TASKS_AMOUNT)->make();
     }
+
 
     public function test_count(): void
     {

@@ -2,71 +2,66 @@
 
 namespace Tests\Feature\Tasks;
 
+use App\Models\Project;
+use App\Models\Task;
 use App\Models\User;
-use Tests\Facades\ProjectFactory;
-use Tests\Facades\TaskFactory;
-use Tests\Facades\UserFactory;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class CreateTest extends TestCase
 {
     private const URI = 'tasks/create';
 
-    /** @var User $admin */
-    private User $admin;
-    /** @var User $manager */
-    private User $manager;
-    /** @var User $auditor */
-    private User $auditor;
-    /** @var User $user */
-    private User $user;
+    private $admin;
+    private $manager;
+    private $auditor;
+    private Model $user;
 
-    /** @var User $projectManager */
-    private User $projectManager;
-    /** @var User $projectAuditor */
-    private User $projectAuditor;
-    /** @var User $projectUser */
-    private User $projectUser;
+    private Model $projectManager;
+    private Model $projectAuditor;
+    private Model $projectUser;
 
-    /** @var array */
-    private $taskData;
-    /** @var array */
-    private $taskRequest;
-    /** @var array */
-    private $taskRequestWithMultipleUsers;
+    private array $taskData;
+    private array $taskRequest;
+    private array $taskRequestWithMultipleUsers;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
-        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
-        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
-        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->user = User::factory()->create();
+        $this->manager = User::factory()->asManager()->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->auditor = User::factory()->asAuditor()->create();
 
-        $this->taskData = array_merge(TaskFactory::createRandomModelData(), [
-            'project_id' => ProjectFactory::create()->id,
-        ]);
+        $this->taskData = array_merge(
+            Task::factory()->make()
+            ->makeHidden('can', 'updated_at', 'started_at')
+            ->toArray(),
+            [
+                'project_id' => Project::factory()->create()->id,
+            ]
+        );
 
         $this->taskRequest = array_merge($this->taskData, [
-            'users' => [UserFactory::create()->id],
+            'users' => [User::factory()->create()->id],
         ]);
 
         $this->taskRequestWithMultipleUsers = array_merge($this->taskData, [
             'users' => [
-                UserFactory::create()->id,
-                UserFactory::create()->id,
-                UserFactory::create()->id,
+                User::factory()->create()->id,
+                User::factory()->create()->id,
+                User::factory()->create()->id,
             ],
         ]);
 
-        $this->projectManager = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectManager = User::factory()->create();
         $this->projectManager->projects()->attach($this->taskData['project_id'], ['role_id' => 1]);
 
-        $this->projectAuditor = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectAuditor = User::factory()->create();
         $this->projectAuditor->projects()->attach($this->taskData['project_id'], ['role_id' => 3]);
 
-        $this->projectUser = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectUser = User::factory()->create();
         $this->projectUser->projects()->attach($this->taskData['project_id'], ['role_id' => 2]);
     }
 
@@ -106,7 +101,6 @@ class CreateTest extends TestCase
         $this->assertDatabaseMissing('tasks', $this->taskData);
 
         $response = $this->actingAs($this->admin)->postJson(self::URI, $this->taskRequestWithMultipleUsers);
-
         $response->assertOk();
         $response->assertJson(['res' => $this->taskData]);
         $this->assertDatabaseHas('tasks', $this->taskData);

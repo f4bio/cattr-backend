@@ -4,31 +4,29 @@ namespace Tests\Feature\Invitations;
 
 use App\Models\User;
 use App\Models\Invitation;
-use Tests\Facades\UserFactory;
-use Tests\Facades\InvitationFactory;
 use Tests\TestCase;
 
 class ResendTest extends TestCase
 {
     private const URI = 'invitations/resend';
 
-    private User $admin;
-    private User $manager;
-    private User $auditor;
-    private User $user;
+    private $admin;
+    private $manager;
+    private $auditor;
+    private $user;
 
-    private Invitation $invitation;
+    private $invitation;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
-        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
-        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
-        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->user = User::factory()->create();
+        $this->manager = User::factory()->asManager()->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->auditor = User::factory()->asAuditor()->create();
 
-        $this->invitation = InvitationFactory::create();
+        $this->invitation = Invitation::factory()->create();
     }
 
     public function test_resend_as_admin(): void

@@ -3,7 +3,6 @@ namespace Tests\Feature\Roles;
 
 use App\Models\Role;
 use App\Models\User;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class CountTest extends TestCase
@@ -16,7 +15,7 @@ class CountTest extends TestCase
     {
         parent::setUp();
 
-        $this->admin = UserFactory::withTokens()->asAdmin()->create();
+        $this->admin = User::factory()->asAdmin()->create();
     }
 
     public function test_count(): void

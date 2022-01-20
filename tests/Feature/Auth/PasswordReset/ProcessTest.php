@@ -3,22 +3,21 @@
 namespace Tests\Feature\Auth\PasswordReset;
 
 use App\Models\User;
-use DB;
-use Hash;
-use Tests\Facades\UserFactory;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ProcessTest extends TestCase
 {
     private const URI = 'auth/password/reset/process';
 
-    private User $user;
+    private $user;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->user = UserFactory::create();
+        $this->user = User::factory()->create();
     }
 
     protected function createReset(string $email, string $token, string $createdAt): array

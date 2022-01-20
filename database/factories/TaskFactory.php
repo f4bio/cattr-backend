@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Priority;
+use App\Models\Project;
 use App\Models\Status;
 use App\Models\Task;
 use App\Models\User;
@@ -32,5 +33,14 @@ class TaskFactory extends Factory
             'priority_id' => Priority::inRandomOrder()->first()->id,
             'status_id' => Status::inRandomOrder()->first()->id,
         ];
+    }
+
+    public function withProject()
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'project_id' => Project::factory()->create()->id,
+            ];
+        });
     }
 }
