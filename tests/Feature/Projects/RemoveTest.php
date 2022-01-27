@@ -65,7 +65,6 @@ class RemoveTest extends TestCase
     public function test_remove_as_auditor(): void
     {
         $this->assertDatabaseHas('projects', $this->project->toArray());
-
         $response = $this->actingAs($this->auditor)->postJson(self::URI, $this->project->only('id'));
 
         $response->assertForbidden();
@@ -80,10 +79,12 @@ class RemoveTest extends TestCase
         $response->assertForbidden();
     }
 
+    // TODO:change later
     public function test_remove_as_project_manager(): void
     {
         $this->assertDatabaseHas('projects', $this->project->toArray());
-        $response = $this->actingAs($this->projectManager)->postJson(self::URI, $this->project->only('id'));
+        $response = $this->actingAs($this->manager)
+            ->postJson(self::URI, $this->project->only('id'));
         $response->assertOk();
         $this->assertSoftDeleted('projects', $this->project->only('id'));
     }

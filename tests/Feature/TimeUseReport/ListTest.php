@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\TimeUseReport;
 
+use App\Models\Project;
+use App\Models\Task;
 use App\Models\TimeInterval;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -25,7 +27,7 @@ class ListTest extends TestCase
 
         $this->admin = User::factory()->asAdmin()->create();
 
-        $intervals = TimeInterval::factory()->count(self::INTERVALS_AMOUNT)->create();
+        $intervals = TimeInterval::factory()->for($this->admin)->for(Task::factory()->for(Project::factory()))->count(self::INTERVALS_AMOUNT)->create();
 
         $intervals->each(function (TimeInterval $interval) {
             $this->userIds[] = $interval->user_id;
@@ -37,6 +39,7 @@ class ListTest extends TestCase
             'end_at' => $intervals->max('end_at')->addMinute(),
             'user_ids' => $this->userIds
         ];
+        $this->withoutExceptionHandling();
     }
 
     public function test_list(): void

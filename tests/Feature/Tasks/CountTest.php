@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tasks;
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Tests\TestCase;
@@ -20,7 +21,7 @@ class CountTest extends TestCase
 
         $this->admin = User::factory()->asAdmin()->create();
 
-        Task::factory()->count(self::TASKS_AMOUNT)->make();
+        Task::factory()->count(self::TASKS_AMOUNT)->for(Project::factory())->create();
     }
 
 

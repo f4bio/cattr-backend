@@ -31,7 +31,7 @@ class ShowTest extends TestCase
         $this->admin = User::factory()->asAdmin()->create();
         $this->auditor = User::factory()->asAuditor()->create();
 
-        $this->project = Project::factory()->create();
+        $this->project = Project::factory()->create()->makeHidden('can');
 
         $this->projectManager = User::factory()->create();
         $this->projectManager->projects()->attach($this->project->id, ['role_id' => 1]);
@@ -69,14 +69,14 @@ class ShowTest extends TestCase
 
     public function test_show_as_user(): void
     {
-        $response = $this->actingAs($this->user)->postJson(self::URI, $this->project->only('id'));
+        $response = $this->actingAs($this->user, 'api')->postJson(self::URI, $this->project->only('id'));
 
         $response->assertForbidden();
     }
 
     public function test_show_as_project_manager(): void
     {
-        $response = $this->actingAs($this->projectManager)->postJson(self::URI, $this->project->only('id'));
+        $response = $this->actingAs($this->manager, 'api')->postJson(self::URI, $this->project->only('id'));
 
         $response->assertOk();
         $response->assertJson($this->project->toArray());
@@ -84,7 +84,7 @@ class ShowTest extends TestCase
 
     public function test_show_as_project_auditor(): void
     {
-        $response = $this->actingAs($this->projectAuditor)->postJson(self::URI, $this->project->only('id'));
+        $response = $this->actingAs($this->projectAuditor, 'api')->postJson(self::URI, $this->project->only('id'));
 
         $response->assertOk();
         $response->assertJson($this->project->toArray());
@@ -92,7 +92,7 @@ class ShowTest extends TestCase
 
     public function test_show_as_project_user(): void
     {
-        $response = $this->actingAs($this->projectUser)->postJson(self::URI, $this->project->only('id'));
+        $response = $this->actingAs($this->projectUser, 'api')->postJson(self::URI, $this->project->only('id'));
         $response->assertOk();
         $response->assertJson($this->project->toArray());
     }
@@ -106,7 +106,7 @@ class ShowTest extends TestCase
 
     public function test_without_params(): void
     {
-        $response = $this->actingAs($this->admin)->postJson(self::URI);
+        $response = $this->actingAs($this->admin, 'api')->postJson(self::URI);
 
         $response->assertValidationError();
     }

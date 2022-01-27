@@ -31,7 +31,7 @@ class ListTest extends TestCase
         $this->admin = User::factory()->asAdmin()->create();
         $this->auditor = User::factory()->asAuditor()->create();
 
-        Project::factory()->count(self::PROJECTS_AMOUNT)->make();
+        Project::factory()->count(self::PROJECTS_AMOUNT)->create();
 
         $this->projectManager = User::factory()->create();
         $this->projectManager->projects()->attach(Project::first()->id, ['role_id' => 1]);
@@ -46,7 +46,6 @@ class ListTest extends TestCase
     public function test_list_as_admin(): void
     {
         $response = $this->actingAs($this->admin)->getJson(self::URI);
-
         $response->assertOk();
         $response->assertJson(Project::all()->toArray());
     }

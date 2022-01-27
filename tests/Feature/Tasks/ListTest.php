@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tasks;
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Tests\Facades\TaskFactory;
@@ -40,7 +41,7 @@ class ListTest extends TestCase
         $this->auditor = User::factory()->asAuditor()->create();
         $this->user = User::factory()->create();
 
-        $this->task = TaskFactory::create();
+        $this->task = Task::factory()->for(Project::factory())->create();
 
         $this->projectManager = User::factory()->create();
         $this->projectManager->projects()->attach($this->task->project_id, ['role_id' => 1]);

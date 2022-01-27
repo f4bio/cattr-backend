@@ -34,14 +34,11 @@ class CreateTest extends TestCase
         $this->admin = User::factory()->asAdmin()->create();
         $this->auditor = User::factory()->asAuditor()->create();
 
-        $this->taskData = array_merge(
-            Task::factory()->make()
+        $this->taskData = Task::factory()
+            ->for(Project::factory())
+            ->make()
             ->makeHidden('can', 'updated_at', 'started_at')
-            ->toArray(),
-            [
-                'project_id' => Project::factory()->create()->id,
-            ]
-        );
+            ->toArray();
 
         $this->taskRequest = array_merge($this->taskData, [
             'users' => [User::factory()->create()->id],
@@ -63,10 +60,21 @@ class CreateTest extends TestCase
 
         $this->projectUser = User::factory()->create();
         $this->projectUser->projects()->attach($this->taskData['project_id'], ['role_id' => 2]);
+//        $this->projectManager = User::factory()->hasAttached($this->taskData)
+//            ->state(['role_id' => 1])->create();
+//
+//        $this->projectAuditor = User::factory()->hasAttached($this->taskData)
+//            ->state(['role_id' => 3])->create();
+//
+//        $this->projectUser = User::factory()->hasAttached($this->taskData)
+//            ->state(['role_id' => 2])->create();
     }
 
     public function test_create_without_user(): void
     {
+
+
+
         $this->taskRequest['users'] = [];
 
         $this->assertDatabaseMissing('tasks', $this->taskData);
@@ -99,7 +107,6 @@ class CreateTest extends TestCase
     public function test_create_with_multiple_users_as_admin(): void
     {
         $this->assertDatabaseMissing('tasks', $this->taskData);
-
         $response = $this->actingAs($this->admin)->postJson(self::URI, $this->taskRequestWithMultipleUsers);
         $response->assertOk();
         $response->assertJson(['res' => $this->taskData]);

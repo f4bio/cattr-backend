@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\ProjectReport;
 
+use App\Models\Project;
 use App\Models\Task;
+use App\Models\TimeInterval;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -22,19 +24,19 @@ class TaskTest extends TestCase
     private int $duration = 0;
     private array $requestData;
 
-    private Task $task;
+    private $task;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = UserFactory::asAdmin()->withTokens()->create();
-        $this->task = TaskFactory::forUser($this->admin)->create();
+        $this->admin = User::factory()->asAdmin()->create();
+        $this->task = Task::factory()->for(Project::factory())->create();
 
         $this->intervals = collect([
-            IntervalFactory::forTask($this->task)->create(),
-            IntervalFactory::forTask($this->task)->create(),
-            IntervalFactory::forTask($this->task)->create(),
+            TimeInterval::factory()->for($this->task)->create(),
+            TimeInterval::factory()->for($this->task)->create(),
+            TimeInterval::factory()->for($this->task)->create(),
         ]);
 
         $this->requestData = [

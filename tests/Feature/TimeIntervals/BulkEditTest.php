@@ -3,6 +3,7 @@
 
 namespace Tests\Feature\TimeIntervals;
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\TimeInterval;
 use App\Models\User;
@@ -40,16 +41,33 @@ class BulkEditTest extends TestCase
         $this->auditor = User::factory()->asAuditor()->create();
         $this->user = User::factory()->create();
 
-        $this->task = Task::factory()->withProject()->create();
+        $this->task = Task::factory()->for(Project::factory())->create();
 
 
-        $this->intervalsForManager = TimeInterval::factory()->for($this->manager)
-            ->count(self::INTERVALS_AMOUNT)->create();
-        $this->intervalsForAuditor = TimeInterval::factory()->for($this->auditor)
-            ->count(self::INTERVALS_AMOUNT)->create();
-        $this->intervalsForUser = TimeInterval::factory()->for($this->user)
-            ->count(self::INTERVALS_AMOUNT)->create();
-        $this->intervals = TimeInterval::factory()->count(self::INTERVALS_AMOUNT)->create();
+        $this->intervalsForManager = TimeInterval::factory()
+            ->for($this->task)
+            ->for($this->manager)
+            ->count(self::INTERVALS_AMOUNT)
+            ->create();
+
+
+        $this->intervalsForAuditor = TimeInterval::factory()
+            ->for($this->task)
+            ->for($this->auditor)
+            ->count(self::INTERVALS_AMOUNT)
+            ->create();
+
+        $this->intervalsForUser = TimeInterval::factory()
+            ->for($this->task)
+            ->for($this->user)
+            ->count(self::INTERVALS_AMOUNT)
+            ->create();
+
+        $this->intervals = TimeInterval::factory()
+            ->for($this->task)
+            ->for($this->user)
+            ->count(self::INTERVALS_AMOUNT)
+            ->create();
     }
 
     public function test_bulk_edit_as_admin(): void

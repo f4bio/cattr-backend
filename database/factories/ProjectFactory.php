@@ -19,14 +19,13 @@ class ProjectFactory extends Factory
     {
         return [
             'company_id' => $this->faker->numberBetween(1, 10),
-            'name' => $this->faker->sentence(3),
+            'name' => $this->faker->unique->company,
             'description' => $this->faker->paragraph,
-            'important' => $this->faker->boolean,
             'source' => 'internal',
             'default_priority_id' => function () {
                 return Priority::orderByRaw('RAND()')->first()->id;
             },
-            'created_at' => now()
+            'created_at' => now(),
         ];
     }
 }

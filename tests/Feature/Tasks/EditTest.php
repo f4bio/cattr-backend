@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tasks;
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -37,7 +38,7 @@ class EditTest extends TestCase
         $this->auditor = User::factory()->asAuditor()->create();
         $this->user = User::factory()->create();
 
-        $this->task = Task::factory()->make()->makeHidden('can', 'updated_at', 'started_at');
+        $this->task = Task::factory()->for(Project::factory())->create()->makeHidden('can', 'updated_at', 'started_at');
 
         $this->taskRequest = array_merge($this->task->toArray(), [
             'users' => [User::factory()->create()->id],
@@ -51,14 +52,14 @@ class EditTest extends TestCase
             ],
         ]);
 
-        $this->projectManager = User::factory()->create();
-        $this->projectManager->projects()->attach($this->task->project_id, ['role_id' => 1]);
+        $this->projectManager = User::factory()->hasAttached($this->task)
+            ->state(['role_id' => 1])->create();
 
-        $this->projectAuditor = User::factory()->create();
-        $this->projectAuditor->projects()->attach($this->task->project_id, ['role_id' => 3]);
+        $this->projectAuditor = User::factory()->hasAttached($this->task)
+            ->state(['role_id' => 3])->create();
 
-        $this->projectUser = User::factory()->create();
-        $this->projectUser->projects()->attach($this->task->project_id, ['role_id' => 2]);
+        $this->projectUser = User::factory()->hasAttached($this->task)
+            ->state(['role_id' => 2])->create();
     }
 
     public function test_edit_without_user(): void
@@ -146,7 +147,6 @@ class EditTest extends TestCase
     public function test_edit_as_auditor(): void
     {
         $this->task->description = $this->taskRequest['description'] = $this->faker->text;
-
         $response = $this->actingAs($this->auditor)->postJson(self::URI, $this->taskRequest);
 
         $response->assertForbidden();
@@ -216,7 +216,6 @@ class EditTest extends TestCase
     public function test_edit_not_existing(): void
     {
         $this->taskRequest['id'] = Task::withoutGlobalScopes()->count() + 20;
-
         $response = $this->actingAs($this->admin)->postJson(self::URI, $this->taskRequest);
 
         $response->assertValidationError();

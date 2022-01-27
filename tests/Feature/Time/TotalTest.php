@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Time;
 
+use App\Models\Task;
 use App\Models\TimeInterval;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -23,7 +24,11 @@ class TotalTest extends TestCase
 
         $this->admin = User::factory()->asAdmin()->create();
 
-        $this->intervals = TimeInterval::factory()->for($this->admin)->count(self::INTERVALS_AMOUNT)->create();
+        $this->intervals = TimeInterval::factory()
+            ->for($this->admin)
+            ->for(Task::factory()->withProject())
+            ->count(self::INTERVALS_AMOUNT)
+            ->create();
     }
 
     public function test_total(): void

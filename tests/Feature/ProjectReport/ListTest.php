@@ -2,11 +2,12 @@
 
 namespace Tests\Feature\ProjectReport;
 
+use App\Models\Project;
+use App\Models\Task;
 use App\Models\TimeInterval;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 use Tests\TestResponse;
 
@@ -40,18 +41,21 @@ class ListTest extends TestCase
     {
         parent::setUp();
 
-        $this->admin = UserFactory::asAdmin()->withTokens()->create();
+        $this->admin = User::factory()->asAdmin()->create();
 
-        $this->intervals = TimeInterval::factory()->count(self::INTERVALS_AMOUNT)->create();
+        $this->intervals = TimeInterval::factory()
+            ->for($this->admin)
+            ->for(Task::factory()
+                ->for(Project::factory()))
+            ->count(self::INTERVALS_AMOUNT)
+            ->create();
 
         $this->intervals->each(function (TimeInterval $interval) {
-            //ScreenshotFactory::fake()->forInterval($interval)->create();
             $this->uids[] = $interval->user_id;
             $this->pids[] = $interval->task->project->id;
             $this->duration += Carbon::parse($interval->end_at)->diffInSeconds($interval->start_at);
         });
 
-        $this->withoutExceptionHandling();
 
         $this->requestData = [
             'start_at' => $this->intervals->min('start_at'),

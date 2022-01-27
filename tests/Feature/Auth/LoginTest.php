@@ -3,8 +3,8 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Cache;
-use Tests\Facades\UserFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class LoginTest extends TestCase
@@ -12,7 +12,7 @@ class LoginTest extends TestCase
     private const URI = 'auth/login';
     private const TEST_URI = 'auth/me';
 
-    private User $user;
+    private Model $user;
 
     private array $loginData;
 
@@ -23,11 +23,11 @@ class LoginTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = UserFactory::create();
+        $this->user = User::factory()->create();
 
         $this->loginData = [
-            'email' => $this->user->email,
-            'password' => $this->user->full_name
+            'email' => $this->user['email'],
+            'password' => $this->user['full_name']
         ];
     }
 
@@ -49,7 +49,7 @@ class LoginTest extends TestCase
 
     public function test_disabled_user(): void
     {
-        $this->user->active = false;
+        $this->user['active'] = false;
         $this->user->save();
         $response = $this->postJson(self::URI, $this->loginData);
 

@@ -3,14 +3,14 @@
 namespace Tests\Unit;
 
 use App\Models\Setting;
-use App\Services\SettingsProviderService;
+use App\Services\SettingsService;
 use Tests\TestCase;
 
 class SettingsTest extends TestCase
 {
     public function test_get_setting(): void
     {
-        $service = resolve(SettingsProviderService::class);
+        $service = resolve(SettingsService::class);
 
         $service->set('test', 'language', 'en');
 
@@ -21,7 +21,7 @@ class SettingsTest extends TestCase
 
     public function test_get_all_settings(): void
     {
-        $service = resolve(SettingsProviderService::class);
+        $service = resolve(SettingsService::class);
 
         $service->set('test', 'language', 'en');
         $service->set('test', 'key', 'value');
@@ -33,7 +33,7 @@ class SettingsTest extends TestCase
 
     public function test_set_one_setting(): void
     {
-        $service = resolve(SettingsProviderService::class);
+        $service = resolve(SettingsService::class);
 
         $result = $service->set('test', 'language', 'en');
 
@@ -42,7 +42,7 @@ class SettingsTest extends TestCase
 
     public function test_set_multiple_settings(): void
     {
-        $service = resolve(SettingsProviderService::class);
+        $service = resolve(SettingsService::class);
 
         $data = ['language' => 'en', 'timezone' => 'utc'];
 

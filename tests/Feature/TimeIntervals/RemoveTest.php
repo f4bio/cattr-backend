@@ -6,6 +6,7 @@ namespace Tests\Feature\TimeIntervals;
 use App\Models\TimeInterval;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Mpdf\Tag\Time;
 use Tests\Facades\IntervalFactory;
 use Tests\TestCase;
 
@@ -18,10 +19,10 @@ class RemoveTest extends TestCase
     private $auditor;
     private Model $user;
 
-    private TimeInterval $timeInterval;
-    private TimeInterval $timeIntervalForManager;
-    private TimeInterval $timeIntervalForAuditor;
-    private TimeInterval $timeIntervalForUser;
+    private $timeInterval;
+    private $timeIntervalForManager;
+    private $timeIntervalForAuditor;
+    private $timeIntervalForUser;
 
     protected function setUp(): void
     {
@@ -33,10 +34,10 @@ class RemoveTest extends TestCase
         $this->user = User::factory()->create();
 
 
-        $this->timeInterval = IntervalFactory::create();
-        $this->timeIntervalForManager = IntervalFactory::forUser($this->manager)->create();
-        $this->timeIntervalForAuditor = IntervalFactory::forUser($this->auditor)->create();
-        $this->timeIntervalForUser = IntervalFactory::forUser($this->user)->create();
+        $this->timeInterval = TimeInterval::factory()->create();
+        $this->timeIntervalForManager = TimeInterval::factory()->for($this->manager)->create();
+        $this->timeIntervalForAuditor = TimeInterval::factory()->for($this->auditor)->create();
+        $this->timeIntervalForUser = TimeInterval::factory()->for($this->user)->create();
     }
 
     public function test_remove_as_admin(): void

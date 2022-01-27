@@ -13,15 +13,13 @@ class TimeIntervalFactory extends Factory
 {
     protected $model = TimeInterval::class;
 
-    public function definition(): array
+    public function definition()
     {
         $randomDateTime = $this->faker->unique()->dateTimeThisYear();
         $randomDateTime = Carbon::instance($randomDateTime);
 
 
         return [
-            'task_id' => Task::factory()->withProject()->create()->id,
-            'user_id' => User::factory()->create()->id,
             'end_at' => $randomDateTime->toIso8601String(),
             'start_at' => $randomDateTime->subSeconds(random_int(1, 3600))->toIso8601String(),
             'activity_fill' => random_int(1, 100),
