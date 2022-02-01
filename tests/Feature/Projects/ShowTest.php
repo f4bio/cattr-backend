@@ -3,44 +3,56 @@
 namespace Tests\Feature\Projects;
 
 use App\Models\Project;
+use App\Models\Status;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Tests\Facades\ProjectFactory;
+use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class ShowTest extends TestCase
 {
     private const URI = 'projects/show';
 
-    private $admin;
-    private $manager;
-    private $auditor;
-    private Model $user;
+    /** @var User $admin */
+    private User $admin;
+    /** @var User $manager */
+    private User $manager;
+    /** @var User $auditor */
+    private User $auditor;
+    /** @var User $user */
+    private User $user;
 
-    private Model $projectManager;
-    private Model $projectAuditor;
-    private Model $projectUser;
+    /** @var User $projectManager */
+    private User $projectManager;
+    /** @var User $projectAuditor */
+    private User $projectAuditor;
+    /** @var User $projectUser */
+    private User $projectUser;
 
-    private Model $project;
+    /** @var Project $project */
+    private $project;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
-        $this->manager = User::factory()->asManager()->create();
-        $this->admin = User::factory()->asAdmin()->create();
-        $this->auditor = User::factory()->asAuditor()->create();
+        $this->admin = UserFactory::refresh()->asAdmin()->withTokens()->create();
+        $this->manager = UserFactory::refresh()->asManager()->withTokens()->create();
+        $this->auditor = UserFactory::refresh()->asAuditor()->withTokens()->create();
+        $this->user = UserFactory::refresh()->asUser()->withTokens()->create();
 
-        $this->project = Project::factory()->create()->makeHidden('can');
+        $this->project = Project::factory()->create();
 
-        $this->projectManager = User::factory()->create();
+        $this->projectManager = UserFactory::refresh()->asUser()->withTokens()->create();
         $this->projectManager->projects()->attach($this->project->id, ['role_id' => 1]);
 
-        $this->projectAuditor = User::factory()->create();
+        $this->projectAuditor = UserFactory::refresh()->asUser()->withTokens()->create();
         $this->projectAuditor->projects()->attach($this->project->id, ['role_id' => 3]);
 
-        $this->projectUser = User::factory()->create();
+        $this->projectUser = UserFactory::refresh()->asUser()->withTokens()->create();
         $this->projectUser->projects()->attach($this->project->id, ['role_id' => 2]);
+        $this->withoutExceptionHandling();
     }
 
     public function test_show_as_admin(): void
@@ -69,14 +81,14 @@ class ShowTest extends TestCase
 
     public function test_show_as_user(): void
     {
-        $response = $this->actingAs($this->user, 'api')->postJson(self::URI, $this->project->only('id'));
+        $response = $this->actingAs($this->user)->postJson(self::URI, $this->project->only('id'));
 
         $response->assertForbidden();
     }
 
     public function test_show_as_project_manager(): void
     {
-        $response = $this->actingAs($this->manager, 'api')->postJson(self::URI, $this->project->only('id'));
+        $response = $this->actingAs($this->projectManager)->postJson(self::URI, $this->project->only('id'));
 
         $response->assertOk();
         $response->assertJson($this->project->toArray());
@@ -84,7 +96,7 @@ class ShowTest extends TestCase
 
     public function test_show_as_project_auditor(): void
     {
-        $response = $this->actingAs($this->projectAuditor, 'api')->postJson(self::URI, $this->project->only('id'));
+        $response = $this->actingAs($this->projectAuditor)->postJson(self::URI, $this->project->only('id'));
 
         $response->assertOk();
         $response->assertJson($this->project->toArray());
@@ -92,7 +104,8 @@ class ShowTest extends TestCase
 
     public function test_show_as_project_user(): void
     {
-        $response = $this->actingAs($this->projectUser, 'api')->postJson(self::URI, $this->project->only('id'));
+        $response = $this->actingAs($this->projectUser)->postJson(self::URI, $this->project->only('id'));
+
         $response->assertOk();
         $response->assertJson($this->project->toArray());
     }
@@ -106,7 +119,7 @@ class ShowTest extends TestCase
 
     public function test_without_params(): void
     {
-        $response = $this->actingAs($this->admin, 'api')->postJson(self::URI);
+        $response = $this->actingAs($this->admin)->postJson(self::URI);
 
         $response->assertValidationError();
     }

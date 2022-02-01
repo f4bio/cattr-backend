@@ -123,7 +123,10 @@ class ListTest extends TestCase
         $response->assertOk();
         $response->assertExactJson(
             Task::query()
-                ->where('id', '=', $this->assignedTask->id)
+                ->leftJoin('statuses as s', 'tasks.status_id', '=', 's.id')
+                ->select('tasks.*')
+                ->where('tasks.id', '=', $this->assignedTask->id)
+                ->orderBy('s.active', 'desc')
                 ->get()->toArray()
         );
     }
@@ -132,7 +135,12 @@ class ListTest extends TestCase
     {
         $response = $this->actingAs($this->projectManager)->getJson(self::URI);
 
-        $task = Task::where('project_id', $this->task->project_id)->get()->toArray();
+        $task = Task::query()
+            ->leftJoin('statuses as s', 'tasks.status_id', '=', 's.id')
+            ->select('tasks.*')
+            ->where('project_id', '=', $this->task->project_id)
+            ->orderBy('s.active', 'desc')
+            ->get()->toArray();
 
         $response->assertOk();
         $response->assertExactJson($task);
@@ -142,7 +150,9 @@ class ListTest extends TestCase
     {
         $response = $this->actingAs($this->projectAuditor)->getJson(self::URI);
 
-        $task = Task::where('project_id', $this->task->project_id)->get()->toArray();
+        $task = Task::query()
+            ->where('project_id', '=', $this->task->project_id)
+            ->get()->toArray();
 
         $response->assertOk();
         $response->assertExactJson($task);

@@ -31,8 +31,8 @@ class TaskFactory extends Factory
             'description' => $this->faker->paragraph,
             'assigned_by' => fn() => User::where(['is_admin' => 1])->first()->id,
             'important' => $this->faker->boolean,
-            'priority_id' => Priority::inRandomOrder()->first()->id,
-            'status_id' => Status::inRandomOrder()->first()->id,
+            'priority_id' => Priority::min('id'),
+            'status_id' => Status::min('id'),
         ];
     }
 }

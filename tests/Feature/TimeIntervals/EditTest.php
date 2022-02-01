@@ -35,6 +35,7 @@ class EditTest extends TestCase
         $this->timeIntervalForManager = TimeInterval::factory()->for($this->manager)->create();
         $this->timeIntervalForAuditor = TimeInterval::factory()->for($this->auditor)->create();
         $this->timeIntervalForUser = TimeInterval::factory()->for($this->user)->create();
+//        $this->withoutExceptionHandling();
     }
 
     public function test_edit_as_admin(): void

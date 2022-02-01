@@ -46,6 +46,8 @@ class BulkRemoveTest extends TestCase
             ->count(self::INTERVALS_AMOUNT)->create();
         $this->intervalsForUser = TimeInterval::factory()->for($this->user)
             ->count(self::INTERVALS_AMOUNT)->create();
+
+//        $this->withoutExceptionHandling();
     }
 
     public function test_bulk_remove_as_admin(): void

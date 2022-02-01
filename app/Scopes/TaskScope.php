@@ -26,14 +26,14 @@ class TaskScope implements Scope
         return $builder
             // A user with the user project role sees only their own tasks
             ->whereHas('users', static function (Builder $builder) use ($user) {
-                $builder->where('id', $user->id);
+                $builder->where('id', $user->id)
+                    ->orderBy('active', 'desc');
             })
             ->orWhereHas('project.users', static function (Builder $builder) use ($user) {
                 $builder
                     ->where('user_id', $user->id)
                     ->whereIn('projects_users.role_id', [1, 2, 3]);
             })
-            ->orderBy('active', 'desc')
             ->orderBy('created_at', 'desc');
     }
 }

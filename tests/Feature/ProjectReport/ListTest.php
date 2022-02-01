@@ -63,6 +63,8 @@ class ListTest extends TestCase
             'uids' => $this->uids,
             'pids' => $this->pids
         ];
+
+        $this->withoutExceptionHandling();
     }
 
     public function test_list(): void

@@ -68,6 +68,8 @@ class BulkEditTest extends TestCase
             ->for($this->user)
             ->count(self::INTERVALS_AMOUNT)
             ->create();
+
+//        $this->withoutExceptionHandling();
     }
 
     public function test_bulk_edit_as_admin(): void

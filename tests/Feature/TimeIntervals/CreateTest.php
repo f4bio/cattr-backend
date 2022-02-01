@@ -35,6 +35,8 @@ class CreateTest extends TestCase
             ->toArray();
 //        $this->intervalData = IntervalFactory::createRandomModelDataWithRelation();
         $this->intervalData['user_id'] = $this->admin->id;
+
+//        $this->withoutExceptionHandling();
     }
 
     public function test_create(): void

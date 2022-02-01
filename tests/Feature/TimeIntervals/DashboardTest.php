@@ -22,6 +22,7 @@ class DashboardTest extends TestCase
         $this->admin = User::factory()->asAdmin()->create();
 
         $this->intervals = TimeInterval::factory()->count(self::INTERVALS_AMOUNT)->for($this->admin)->create();
+//        $this->withoutExceptionHandling();
     }
 
     public function test_dashboard(): void

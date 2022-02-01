@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Time;
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\TimeInterval;
 use App\Models\User;
@@ -26,7 +27,7 @@ class TotalTest extends TestCase
 
         $this->intervals = TimeInterval::factory()
             ->for($this->admin)
-            ->for(Task::factory()->withProject())
+            ->for(Task::factory()->for(Project::factory()))
             ->count(self::INTERVALS_AMOUNT)
             ->create();
     }
