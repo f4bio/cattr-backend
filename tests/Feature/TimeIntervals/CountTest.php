@@ -21,7 +21,7 @@ class CountTest extends TestCase
 
         $this->admin = User::factory()->asAdmin()->create();
 
-        TimeInterval::factory()->count(self::SCREENSHOTS_AMOUNT)->make();
+        TimeInterval::factory()->count(self::SCREENSHOTS_AMOUNT)->create();
     }
 
     public function test_count(): void

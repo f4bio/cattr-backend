@@ -31,8 +31,6 @@ class ShowTest extends TestCase
 
         $this->timeInterval = TimeInterval::factory()->create();
         $this->timeIntervalForUser = TimeInterval::factory()->for($this->user)->create();
-
-//        $this->withoutExceptionHandling();
     }
 
     public function test_show_as_admin(): void

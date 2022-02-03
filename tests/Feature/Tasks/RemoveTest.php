@@ -5,8 +5,6 @@ namespace Tests\Feature\Tasks;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
-use Tests\Facades\TaskFactory;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class RemoveTest extends TestCase

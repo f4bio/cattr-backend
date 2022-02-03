@@ -5,8 +5,6 @@ namespace Tests\Feature\Tasks;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
-use Tests\Facades\TaskFactory;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class ListTest extends TestCase
@@ -53,10 +51,13 @@ class ListTest extends TestCase
         $this->projectUser->projects()->attach($this->task->project_id, ['role_id' => 2]);
 
         $this->assignedUser = User::factory()->create();
-        $this->assignedTask = TaskFactory::refresh()->forUser($this->assignedUser)->create();
+        $this->assignedTask = Task::factory()->for(Project::factory())->create();
+        $this->assignedTask->users()->attach($this->assignedUser->id);
 
         $this->assignedProjectUser = User::factory()->create();
-        $this->assignedProjectTask = TaskFactory::refresh()->forUser($this->assignedProjectUser)->create();
+        $this->assignedProjectTask = Task::factory()->for(Project::factory())->create();
+        $this->assignedProjectTask->users()->attach($this->assignedProjectUser->id);
+
         $this->assignedProjectUser->projects()->attach($this->assignedProjectTask->project_id, ['role_id' => 2]);
     }
 

@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Model;
 
 class TaskFactory extends Factory
 {
@@ -34,5 +35,11 @@ class TaskFactory extends Factory
             'priority_id' => Priority::min('id'),
             'status_id' => Status::min('id'),
         ];
+    }
+
+    public function forUser(User|Model $user)
+    {
+        $this->users()->attach($user->id);
+        return $this;
     }
 }

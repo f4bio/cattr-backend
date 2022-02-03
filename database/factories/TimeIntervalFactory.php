@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Helpers\FakeScreenshotGenerator;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\TimeInterval;
 use App\Models\User;
@@ -20,6 +21,8 @@ class TimeIntervalFactory extends Factory
 
 
         return [
+            'task_id' => Task::factory()->for(Project::factory()),
+            'user_id' => User::factory(),
             'end_at' => $randomDateTime->toIso8601String(),
             'start_at' => $randomDateTime->subSeconds(random_int(1, 3600))->toIso8601String(),
             'activity_fill' => random_int(1, 100),

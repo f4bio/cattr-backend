@@ -39,6 +39,7 @@ class ListTest extends TestCase
 
     protected function setUp(): void
     {
+        //error model screenshot from ProjectHelper
         parent::setUp();
 
         $this->admin = User::factory()->asAdmin()->create();
@@ -63,7 +64,6 @@ class ListTest extends TestCase
             'uids' => $this->uids,
             'pids' => $this->pids
         ];
-
         $this->withoutExceptionHandling();
     }
 

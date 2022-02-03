@@ -5,11 +5,6 @@ namespace Tests\Feature\TimeIntervals;
 
 use App\Models\TimeInterval;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
-use Tests\Facades\IntervalFactory;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class BulkRemoveTest extends TestCase
@@ -46,8 +41,6 @@ class BulkRemoveTest extends TestCase
             ->count(self::INTERVALS_AMOUNT)->create();
         $this->intervalsForUser = TimeInterval::factory()->for($this->user)
             ->count(self::INTERVALS_AMOUNT)->create();
-
-//        $this->withoutExceptionHandling();
     }
 
     public function test_bulk_remove_as_admin(): void

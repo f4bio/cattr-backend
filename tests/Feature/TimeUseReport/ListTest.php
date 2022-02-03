@@ -12,6 +12,7 @@ use Tests\TestCase;
 
 class ListTest extends TestCase
 {
+    //error model screenshot from ProjectHelper
     private const URI = 'time-use-report/list';
 
     private const INTERVALS_AMOUNT = 10;

@@ -5,28 +5,26 @@ namespace Tests\Feature\Tasks;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
-use Tests\Facades\TaskFactory;
-use Tests\Facades\UserFactory;
 use Tests\TestCase;
 
 class ShowTest extends TestCase
 {
     private const URI = 'tasks/show';
 
-    private User $admin;
-    private User $manager;
-    private User $auditor;
+    private $admin;
+    private $manager;
+    private $auditor;
     private $user;
 
-    private User $projectManager;
-    private User $projectAuditor;
-    private User $projectUser;
+    private $projectManager;
+    private $projectAuditor;
+    private $projectUser;
 
-    private User $assignedUser;
+    private $assignedUser;
     private $assignedTask;
 
-    private User $assignedProjectUser;
-    private Task $assignedProjectTask;
+    private $assignedProjectUser;
+    private $assignedProjectTask;
 
     private $task;
 
@@ -47,16 +45,16 @@ class ShowTest extends TestCase
         $this->projectAuditor = User::factory()->asAuditor()->create();
         $this->projectAuditor->projects()->attach($this->task->project_id, ['role_id' => 3]);
 
-        $this->projectUser = UserFactory::refresh()->asUser()->withTokens()->create();
+        $this->projectUser = User::factory()->create();
         $this->projectUser->projects()->attach($this->task->project_id, ['role_id' => 2]);
 
-        $this->assignedUser = UserFactory::refresh()->asUser()->withTokens()->create();
-        $this->assignedTask = TaskFactory::refresh()->forUser($this->assignedUser)->create();
-//        $this->assignedTask = Task::factory()->for(Project::factory())->create()
-//            ->users()->attach($this->assignedUser->id);
+        $this->assignedUser = User::factory()->create();
+        $this->assignedTask = Task::factory()->for(Project::factory())->create();
+        $this->assignedTask->users()->attach($this->assignedUser->id);
 
-        $this->assignedProjectUser = UserFactory::refresh()->asUser()->withTokens()->create();
-        $this->assignedProjectTask = TaskFactory::refresh()->forUser($this->assignedProjectUser)->create();
+        $this->assignedProjectUser = User::factory()->create();
+        $this->assignedProjectTask = Task::factory()->for(Project::factory())->create();
+        $this->assignedProjectTask->users()->attach($this->assignedProjectUser->id);
         $this->assignedProjectUser->projects()->attach($this->assignedProjectTask->project_id, ['role_id' => 2]);
     }
 

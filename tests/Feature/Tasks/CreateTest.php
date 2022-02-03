@@ -60,14 +60,6 @@ class CreateTest extends TestCase
 
         $this->projectUser = User::factory()->create();
         $this->projectUser->projects()->attach($this->taskData['project_id'], ['role_id' => 2]);
-//        $this->projectManager = User::factory()->hasAttached($this->taskData)
-//            ->state(['role_id' => 1])->create();
-//
-//        $this->projectAuditor = User::factory()->hasAttached($this->taskData)
-//            ->state(['role_id' => 3])->create();
-//
-//        $this->projectUser = User::factory()->hasAttached($this->taskData)
-//            ->state(['role_id' => 2])->create();
     }
 
     public function test_create_without_user(): void

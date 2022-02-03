@@ -20,7 +20,7 @@ class ListTest extends TestCase
 
         $this->admin = User::factory()->asAdmin()->create();
 
-        TimeInterval::factory()->count(self::INTERVALS_AMOUNT)->make();
+        TimeInterval::factory()->count(self::INTERVALS_AMOUNT)->create();
     }
 
     public function test_list(): void
