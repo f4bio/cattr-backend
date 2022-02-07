@@ -80,7 +80,7 @@ class UserFactory extends Factory
 
     public function asAdmin(): UserFactory
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function () {
             return [
                 'email' => $this->faker->unique()->safeEmail,
                 'is_admin' => true,
@@ -90,7 +90,7 @@ class UserFactory extends Factory
 
     public function asManager(): UserFactory
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function () {
             return [
                 'email' => $this->faker->unique()->safeEmail,
                 'role_id' => 1,
@@ -100,7 +100,7 @@ class UserFactory extends Factory
 
     public function asAuditor(): UserFactory
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function () {
             return [
                 'email' => $this->faker->unique()->safeEmail,
                 'role_id' => 3,
@@ -110,7 +110,7 @@ class UserFactory extends Factory
 
     public function asUser(): UserFactory
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function () {
             return [
                 'email' => $this->faker->unique()->safeEmail,
                 'role_id' => 2,

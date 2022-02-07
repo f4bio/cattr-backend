@@ -5,6 +5,8 @@ namespace Tests\Feature\TimeIntervals;
 
 use App\Models\TimeInterval;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
 class BulkRemoveTest extends TestCase
@@ -13,15 +15,15 @@ class BulkRemoveTest extends TestCase
 
     private const INTERVALS_AMOUNT = 5;
 
-    private $admin;
-    private $manager;
-    private $auditor;
-    private $user;
+    private User $admin;
+    private User $manager;
+    private User $auditor;
+    private Model $user;
 
-    private $intervals;
-    private $intervalsForManager;
-    private $intervalsForAuditor;
-    private $intervalsForUser;
+    private Collection $intervals;
+    private Collection $intervalsForManager;
+    private Collection $intervalsForAuditor;
+    private Collection $intervalsForUser;
 
     protected function setUp(): void
     {
@@ -34,13 +36,22 @@ class BulkRemoveTest extends TestCase
 
 
 
-        $this->intervals = TimeInterval::factory()->count(self::INTERVALS_AMOUNT)->create();
-        $this->intervalsForManager = TimeInterval::factory()->for($this->manager)
-            ->count(self::INTERVALS_AMOUNT)->create();
-        $this->intervalsForAuditor = TimeInterval::factory()->for($this->auditor)
-            ->count(self::INTERVALS_AMOUNT)->create();
-        $this->intervalsForUser = TimeInterval::factory()->for($this->user)
-            ->count(self::INTERVALS_AMOUNT)->create();
+        $this->intervals = TimeInterval::factory()
+            ->count(self::INTERVALS_AMOUNT)
+            ->create();
+
+        $this->intervalsForManager = TimeInterval::factory()
+            ->for($this->manager)
+            ->count(self::INTERVALS_AMOUNT)
+            ->create();
+        $this->intervalsForAuditor = TimeInterval::factory()
+            ->for($this->auditor)
+            ->count(self::INTERVALS_AMOUNT)
+            ->create();
+        $this->intervalsForUser = TimeInterval::factory()
+            ->for($this->user)
+            ->count(self::INTERVALS_AMOUNT)
+            ->create();
     }
 
     public function test_bulk_remove_as_admin(): void

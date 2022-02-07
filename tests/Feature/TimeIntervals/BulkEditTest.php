@@ -7,8 +7,8 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\TimeInterval;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Tests\TestCase;
 
@@ -23,14 +23,14 @@ class BulkEditTest extends TestCase
     private User $admin;
     private User $manager;
     private User $auditor;
-    private $user;
+    private Model $user;
 
     private Collection $intervals;
     private Collection $intervalsForManager;
     private Collection $intervalsForAuditor;
     private Collection $intervalsForUser;
 
-    private $task;
+    private Model $task;
 
     protected function setUp(): void
     {
@@ -44,30 +44,26 @@ class BulkEditTest extends TestCase
         $this->task = Task::factory()->for(Project::factory())->create();
 
 
+        $this->intervals = TimeInterval::factory()
+            ->count(self::INTERVALS_AMOUNT)
+            ->create();
+
         $this->intervalsForManager = TimeInterval::factory()
-            ->for($this->task)
             ->for($this->manager)
             ->count(self::INTERVALS_AMOUNT)
             ->create();
 
 
         $this->intervalsForAuditor = TimeInterval::factory()
-            ->for($this->task)
             ->for($this->auditor)
             ->count(self::INTERVALS_AMOUNT)
             ->create();
 
         $this->intervalsForUser = TimeInterval::factory()
-            ->for($this->task)
             ->for($this->user)
             ->count(self::INTERVALS_AMOUNT)
             ->create();
 
-        $this->intervals = TimeInterval::factory()
-            ->for($this->task)
-            ->for($this->user)
-            ->count(self::INTERVALS_AMOUNT)
-            ->create();
 
 //        $this->withoutExceptionHandling();
     }

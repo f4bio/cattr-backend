@@ -19,7 +19,6 @@ class TimeIntervalFactory extends Factory
         $randomDateTime = $this->faker->unique()->dateTimeThisYear();
         $randomDateTime = Carbon::instance($randomDateTime);
 
-
         return [
             'task_id' => Task::factory()->for(Project::factory()),
             'user_id' => User::factory(),

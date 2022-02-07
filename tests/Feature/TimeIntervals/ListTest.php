@@ -12,7 +12,7 @@ class ListTest extends TestCase
 
     private const INTERVALS_AMOUNT = 10;
 
-    private $admin;
+    private User $admin;
 
     protected function setUp(): void
     {

@@ -4,6 +4,7 @@ namespace Tests\Feature\TimeIntervals;
 
 use App\Models\TimeInterval;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Tests\TestCase;
 
 class DashboardTest extends TestCase
@@ -12,8 +13,8 @@ class DashboardTest extends TestCase
 
     private const INTERVALS_AMOUNT = 2;
 
-    private $intervals;
-    private $admin;
+    private Collection $intervals;
+    private User $admin;
 
     protected function setUp(): void
     {
@@ -21,7 +22,7 @@ class DashboardTest extends TestCase
 
         $this->admin = User::factory()->asAdmin()->create();
 
-        $this->intervals = TimeInterval::factory()->count(self::INTERVALS_AMOUNT)->for($this->admin)->create();
+        $this->intervals = TimeInterval::factory()->for($this->admin)->count(self::INTERVALS_AMOUNT)->create();
     }
 
     public function test_dashboard(): void

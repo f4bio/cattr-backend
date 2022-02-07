@@ -10,9 +10,9 @@ class CreateTest extends TestCase
 {
     private const URI = 'time-intervals/create';
 
-    private $admin;
+    private User $admin;
 
-    private $intervalData;
+    private array $intervalData;
 
     protected function setUp(): void
     {
@@ -22,10 +22,9 @@ class CreateTest extends TestCase
 
         $this->intervalData = TimeInterval::factory()
             ->for($this->admin)
-            ->create()
+            ->make()
             ->makeHidden('id', 'updated_at', 'created_at', 'deleted_at', 'can')
             ->toArray();
-        $this->intervalData['user_id'] = $this->admin->id;
     }
 
     public function test_create(): void

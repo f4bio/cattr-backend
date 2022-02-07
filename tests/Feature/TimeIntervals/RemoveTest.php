@@ -14,15 +14,15 @@ class RemoveTest extends TestCase
 {
     private const URI = 'time-intervals/remove';
 
-    private $admin;
-    private $manager;
-    private $auditor;
+    private User $admin;
+    private User $manager;
+    private User $auditor;
     private Model $user;
 
-    private $timeInterval;
-    private $timeIntervalForManager;
-    private $timeIntervalForAuditor;
-    private $timeIntervalForUser;
+    private Model $timeInterval;
+    private Model $timeIntervalForManager;
+    private Model $timeIntervalForAuditor;
+    private Model $timeIntervalForUser;
 
     protected function setUp(): void
     {

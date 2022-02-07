@@ -12,9 +12,9 @@ class EditTest extends TestCase
 {
     private const URI = 'time-intervals/edit';
 
-    private $admin;
-    private $manager;
-    private $auditor;
+    private User $admin;
+    private User $manager;
+    private User $auditor;
     private Model $user;
 
     private Model $timeInterval;

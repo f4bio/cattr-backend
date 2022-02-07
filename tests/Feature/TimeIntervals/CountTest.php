@@ -13,7 +13,7 @@ class CountTest extends TestCase
 
     private const SCREENSHOTS_AMOUNT = 10;
 
-    private $admin;
+    private User $admin;
 
     protected function setUp(): void
     {
